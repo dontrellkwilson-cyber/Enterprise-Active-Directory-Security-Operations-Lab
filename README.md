@@ -245,6 +245,78 @@ Using static IPs is critical in a domain environment to prevent IP changes that 
 - Domain Name: **LAB.local**
 - Activate Scope.
 - Then, authorize the DHCP server in AD.
+<br>
 
+**`Step 8:`**
+<p align="center"><strong>Disable DNS on NAT NIC:</strong></p>
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/5de4f243-2265-4398-8c06-d2f36969db16" width="400"/>
+</p>
 
+**`Go to:`**
+- Network Adapter → NAT NIC → IPv4 → Advanced.
+- **Uncheck:**
+  - “Register this connection in DNS”.
+- Prevents DNS confusion.
 
+<p align="center"><strong>Configure DNS on DC02:</strong></p>
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/b768c82a-7da8-4981-bed1-0d08a34603c0" width="400"/>
+</p>
+
+**`Update DNS settings:`**
+- Preferred DNS: **192.168.1.10**
+- Alternate DNS: **192.168.1.11**
+
+Now both DCs can resolve each other.
+<br>
+
+**`Step 9:`**
+<p align="center"><strong>Test DC01:</strong></p>
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/b8b51aab-609c-4a25-80f1-be9e9ed71933" width="400"/>
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="https://github.com/user-attachments/assets/b58fe52d-ccf2-4cdd-888a-82156a1ab60d" width="400"/>
+</p>
+
+**`Run:`**
+- ipconfig /all
+
+**`Confirm:`**
+- Internal NIC = **192.168.1.10**
+- DNS = **192.168.1.10**
+
+**`Test:`**
+- nslookup LAB.local
+<br>
+
+**`Key Tasks Completed:`**
+- Configured a dual Domain Controller environment (DC01 & DC02) for redundancy and high availability.
+- Designed network architecture using NAT (internet access) and an isolated internal network.
+- Assigned static IP addresses to ensure consistent communication for Active Directory services.
+- Installed and configured Active Directory Domain Services (AD DS), DNS, and DHCP.
+- Deployed a new Active Directory forest (LAB.local) and promoted DC01 as the primary Domain Controller.
+- Joined DC02 to the domain and promoted it as a secondary Domain Controller.
+- Configured DNS for proper name resolution and followed best practices for multi-DC environments.
+- Verified Active Directory health using replication tools (repadmin, AD Sites and Services).
+- Configured and authorized DHCP with a scoped IP range for client devices.
+- Optimized network settings by disabling DNS registration on the NAT adapter to prevent conflicts.
+- Tested domain functionality and verified DNS resolution across domain controllers.
+<br>
+
+--------
+
+<h2 align="center"><strong>Phase II: Organizational Unit (OU) Design & User Provisioning</strong></h2>
+
+**`Organizational Unit (OU) Design & User Provisioning Key Concepts:`** 
+-  OU design follows business structure, such as departments, roles, or locations.
+-  User provisioning includes creating and configuring user accounts with the correct attributes and settings.
+-  Security groups are used to assign permissions and control access to resources.
+-  OU structure supports delegation of administration and simplifies policy application through Group Policy Objects.
+
+<b>`Lab Overview:`</b>
+
+This phase builds and manages the Active Directory structure. Organizational Units organize users and computers for easier administration. New user accounts are created and placed into security groups, including admin accounts for elevated privileges. A Windows 10 system is joined to the domain to integrate with Active Directory. A new domain user account is then used to log in and verify authentication and access control.
+
+<h3 align="center">Active Directory Infrastructure Setup:</h3>
+<p align="center"> <strong>Creating OUs:</strong> </p> 
