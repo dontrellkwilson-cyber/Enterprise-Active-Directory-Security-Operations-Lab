@@ -319,4 +319,91 @@ Now both DCs can resolve each other.
 This phase builds and manages the Active Directory structure. Organizational Units organize users and computers for easier administration. New user accounts are created and placed into security groups, including admin accounts for elevated privileges. A Windows 10 system is joined to the domain to integrate with Active Directory. A new domain user account is then used to log in and verify authentication and access control.
 
 <h3 align="center">Active Directory Infrastructure Setup:</h3>
-<p align="center"> <strong>Creating OUs:</strong> </p> 
+
+**`Step 1:`**
+<p align="center"><strong>Creating OUs:</strong></p>
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/cc174823-f4fb-4366-b626-f75f32885a6f" width="400"/>
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="https://github.com/user-attachments/assets/a14525a5-2643-4d57-8a6d-20826c09bffc" width="400"/>
+</p>
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/d55d9f6e-edb3-43cc-86da-e89ee45fcf5f" width="400"/>
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="https://github.com/user-attachments/assets/33de875c-d25a-4c1e-a192-8880011805c9" width="400"/>
+</p>
+
+**`Open Active Directory:`**
+- **On DC01:**
+  - Open Active Directory Users and Computers
+
+**`Create Parent OU (“Company”):`**
+- **Right-click:**
+  - LAB.local
+- **Click:**
+  - Company
+- **Name it:**
+  - Company
+- Click OK
+
+**`Create Child OUs inside “Company:”`**
+- **Now expand:**
+  - LAB.local → Company
+
+**`Create HR OU, IT OU, and Finance OU:`**
+- Right-click Company
+- New → Organizational Unit
+- Name:
+- Click OK.
+
+**`Step 2:`**
+<p align="center"><strong>Creating Departmental OU Users:</strong></p>
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/b8357139-6768-472f-85ff-ead5b99bdce3" width="400"/>
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="https://github.com/user-attachments/assets/2408b43e-e250-4a46-ac88-c7c3927fe62a" width="400"/>
+</p>
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/e4ec89e4-a504-4926-88e4-72fd0ffcc979" width="400"/>
+</p>
+
+**`Inside each OU:`**
+- Right-click → New → User
+- **Repeat for:**
+  - IT OU
+  - Finance OU
+<br>
+
+**`Step 3:`**
+<p align="center"><strong>Domain Integration of a Windows Client with Active Directory</strong></p>
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/96b854cf-abc4-480b-84c4-116165f85e1c" width="400"/>
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="https://github.com/user-attachments/assets/d0588740-e4bc-43b5-b3fc-3562b4212adb" width="400"/>
+</p>
+
+**`Steps:`**
+- Set the client DNS to the domain controller IP address **192.168.1.10**.
+- Open system settings on the Windows 10 client.
+- System → About Rename this PC (advanced).
+- Click Change.
+- Choose the Domain option.
+- Enter the domain name.
+- Provide domain admin credentials.
+- Restart the client machine.
+- After reboot, sign in using a domain user account.
+
+**`Key Tasks Completed:`**
+- Designed and implemented an Organizational Unit (OU) structure to mirror a real-world enterprise environment.
+- Created a hierarchical OU model with a parent Company OU and departmental OUs (HR, IT, Finance).
+- Provisioned user accounts within each department using standardized naming conventions.
+- Organized users logically to support scalable management and policy application.
+- Demonstrated understanding of Active Directory object types (users vs OUs).
+- Joined a Windows 10 client machine to the LAB.local domain.
+- Configured client DNS to use the Domain Controller for proper domain resolution.
+- Validated domain authentication by logging in with Active Directory user accounts.
+<br>
+
+--------
+
+<h2 align="center"><strong>Phase III: Group Policy Management</strong></h2>
