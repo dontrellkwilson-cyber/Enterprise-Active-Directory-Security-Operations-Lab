@@ -176,34 +176,9 @@ Core infrastructure roles were installed to support the Active Directory environ
 
 **`Domain Controller Promotion:`**
 
-**After install:**
-- Click "Promote this server to a domain controller".
-- **`Select:`**
-  - Add a new forest.
-  - Root domain name: LAB.local
-- **`Set:`**
-  - DSRM password (write this down).
-- **`Then:`**
-  - Install → Reboot
- 
-**For DC02:**
+DC01 was promoted to a domain controller by creating a new Active Directory forest (LAB.local), establishing the foundation of the domain environment. DC02 was then joined to the domain and promoted as an additional domain controller to provide redundancy, load balancing, and directory replication.
 
-**First:**
-- Go to:
-- System → About Rename this PC (advanced).
-- Click Change.
-- Join domain:
-  - LAB.local
--  **`Use:`**
-  - Domain admin credentials.
-- Reboot.
-- Click: “Promote this server to a domain controller”.
-- **`Choose:`**
-  - Add a domain controller to an existing domain
-  - Domain: LAB.local
-- **`Check:`**
-  - DNS Server.
-  - Global Catalog.
+This configuration ensures high availability and fault tolerance within the Active Directory infrastructure.
 <br>
 
 **`Step 6:`**
@@ -214,15 +189,6 @@ Core infrastructure roles were installed to support the Active Directory environ
   &nbsp;&nbsp;&nbsp;&nbsp;
   <img src="https://github.com/user-attachments/assets/87513e3c-8f9c-42b8-80cc-81ef8b80a504" width="400"/>
 </p>
-
-**`After reboot:`**
-- **Check:**
-  - Active Directory Users and Computers.
-  - DNS Manager.
-
-- **`You should see:`**
-  - Forward Lookup Zone: LAB.local
-  
 <p align="center"><strong>DC02 Verification:</strong></p>
 <p align="center">
   <img src="https://github.com/user-attachments/assets/cc1d45e4-02d0-4f3b-bac2-8f6d03146b22" width="400"/>
@@ -230,12 +196,11 @@ Core infrastructure roles were installed to support the Active Directory environ
   <img src="https://github.com/user-attachments/assets/07b2a509-1afc-4b12-93bd-25e6f44482b5" width="400"/>
 </p>
 
-**`After reboot:`**
-- **Run:**
-  - repadmin /replsummary
-- **OR check:**
-  - Active Directory Sites and Services.
-- You should see DC01 ↔ DC02 replication.
+**`Active Directory and Replication Verification:`**
+
+Post-deployment validation was performed to confirm proper Active Directory functionality. DNS configuration was verified through forward lookup zones, and replication health between DC01 and DC02 was validated using tools such as `repadmin` and Active Directory Sites and Services.
+
+Successful replication confirmed directory consistency and proper communication between domain controllers.
 <br>
 
 **`Step 7:`**
@@ -254,22 +219,13 @@ Core infrastructure roles were installed to support the Active Directory environ
   <img src="https://github.com/user-attachments/assets/491b9a01-66ae-4db7-a871-204c1c63f4ea" width="400"/>
 </p>
 
-**`Open DHCP Manager:`**
-- **Create Scope:**
-  - Name: **LAB-SCOPE**
-- **Range:**
-  - Start: **192.168.1.100**
-  - End: **192.168.1.200**
+**`DHCP Configuration:`**
 
-**`Exclusions:`**
-- **192.168.1.1 – 192.168.1.50** (servers, infra)
+A DHCP scope was configured to automate IP address assignment for client systems within the domain. The scope range (**192.168.1.100–192.168.1.200**) was defined to separate client devices from infrastructure systems.
 
-**`Configure Options:`**
-- Router (Gateway): leave blank (or later if you add routing).
-- DNS Server: **192.168.1.10**
-- Domain Name: **LAB.local**
-- Activate Scope.
-- Then, authorize the DHCP server in AD.
+DNS settings were configured to point to the domain controller, ensuring proper name resolution and domain connectivity. The DHCP server was authorized within Active Directory to allow it to issue IP addresses securely.
+
+This setup enables centralized network management and reduces manual configuration for client devices.
 <br>
 
 **`Step 8:`**
@@ -277,23 +233,20 @@ Core infrastructure roles were installed to support the Active Directory environ
 <p align="center">
   <img src="https://github.com/user-attachments/assets/5de4f243-2265-4398-8c06-d2f36969db16" width="400"/>
 </p>
-
-**`Go to:`**
-- Network Adapter → NAT NIC → IPv4 → Advanced.
-- **Uncheck:**
-  - “Register this connection in DNS”.
-- Prevents DNS confusion.
-
 <p align="center"><strong>Configure DNS on DC02:</strong></p>
 <p align="center">
   <img src="https://github.com/user-attachments/assets/b768c82a-7da8-4981-bed1-0d08a34603c0" width="400"/>
 </p>
 
-**`Update DNS settings:`**
+**`DNS Optimization and Configuration:`**
+
+DNS settings were refined to prevent conflicts and ensure accurate name resolution. DNS registration was disabled on the NAT adapter to avoid incorrect record entries, while DC02 was configured to use DC01 as its primary DNS server.
+
+This configuration ensures consistent name resolution and reliable communication between domain controllers.
 - Preferred DNS: **192.168.1.10**
 - Alternate DNS: **192.168.1.11**
 
-Now both DCs can resolve each other.
+Now, both DCs can resolve each other.
 <br>
 
 **`Step 9:`**
@@ -304,15 +257,11 @@ Now both DCs can resolve each other.
   <img src="https://github.com/user-attachments/assets/b58fe52d-ccf2-4cdd-888a-82156a1ab60d" width="400"/>
 </p>
 
-**`Run:`**
-- ipconfig /all
+**`System Validation and Testing:`**
 
-**`Confirm:`**
-- Internal NIC = **192.168.1.10**
-- DNS = **192.168.1.10**
+Network and domain functionality were validated using tools such as `ipconfig` and `nslookup` to confirm correct IP configuration and DNS resolution.
 
-**`Test:`**
-- nslookup LAB.local
+Successful testing verified that the domain environment was fully operational and that systems could communicate and resolve domain resources correctly.
 <br>
 
 **`Key Tasks Completed:`**
