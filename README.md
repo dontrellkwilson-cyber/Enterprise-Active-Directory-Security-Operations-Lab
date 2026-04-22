@@ -52,7 +52,7 @@ PowerShell.<br>
 
 <b>`Lab Overview:`</b>
 
-This step prepares the server for domain controller deployment by renaming the server, configuring network adapters, and setting a static IP address. A static IP keeps the address stable instead of changing after lease renewal. This setup supports Active Directory, DNS, and DHCP, and maintains reliable network communication across the environment.
+This lab focuses on building a functional Active Directory environment by configuring two Domain Controllers (DC01 and DC02) within an isolated network. Core services, including AD DS, DNS, and DHCP, were installed and configured, with DC01 acting as the primary controller and DC02 providing redundancy through replication. The setup was validated by verifying DNS resolution, Active Directory functionality, and successful replication between domain controllers.
 
 <h3 align="center">Server Setup & Domain Controller Configuration:</h3>
 
@@ -316,7 +316,7 @@ Now both DCs can resolve each other.
 
 <b>`Lab Overview:`</b>
 
-This phase builds and manages the Active Directory structure. Organizational Units organize users and computers for easier administration. New user accounts are created and placed into security groups, including admin accounts for elevated privileges. A Windows 10 system is joined to the domain to integrate with Active Directory. A new domain user account is then used to log in and verify authentication and access control.
+This lab focuses on designing a structured Active Directory environment by creating Organizational Units (OUs) for departments such as HR, IT, and Finance, and provisioning users within each group. A hierarchical OU model was implemented to mirror a real-world enterprise and support scalable management. The setup was validated by joining a Windows client to the LAB.local domain and confirming successful authentication using domain accounts.
 
 <h3 align="center">Active Directory Infrastructure Setup:</h3>
 
@@ -407,3 +407,168 @@ This phase builds and manages the Active Directory structure. Organizational Uni
 --------
 
 <h2 align="center"><strong>Phase III: Group Policy Management</strong></h2>
+
+**`GPOs Key Concepts:`** 
+-  Group Policy centralizes configuration for users and computers in an Active Directory domain.
+-  GPOs link to sites, domains, or OUs to apply settings based on structure.
+-  Security settings include password rules, account lockout policies, and system restrictions.
+-  User and computer policies enforce limits such as blocking the Control Panel or Command Prompt.
+-  Policy application follows Active Directory inheritance and updates through refresh cycles or gpupdate /force.
+-  This approach reduces manual configuration and maintains consistent system settings across the domain.
+
+<b>`Lab Overview:`</b>
+
+This phase focuses on implementing centralized management through Group Policy Objects (GPOs) to control user and system behavior across the domain. Department-specific GPOs were created and applied to Organizational Units to enforce policies such as password requirements, screen lock settings, and system restrictions. The configuration was validated by applying policies to client machines and confirming different behaviors across departments using tools like gpupdate /force and gpresult /r.
+
+<h3 align="center">Creating and Managing Group Policy Objects (GPOs):</h3>
+
+**`Step 1:`**
+<p align="center"> <strong>Open Group Policy Management Console (GPMC):</strong></p>
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/cb087389-5dca-4003-a740-20cef7c5f423" width="400"/>
+  <img src="https://github.com/user-attachments/assets/69d3f2ea-c795-4a44-80c5-37edbe6d6780" width="400"/>
+</p>
+
+This opens the console used to manage GPOs.
+   
+**`Steps:`**
+- Open Server Manager.
+- Click Tools at the top right.
+- Select Group Policy Management.
+<br>
+
+**`Step 2:`**
+<p align="center"> <strong>Create a GPO (per department):</strong></p>
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/5f95cae5-a2e4-43e4-857e-54d9e228418d" width="400"/>
+  <img src="https://github.com/user-attachments/assets/eeea36e7-726a-4022-ac95-472b276d2a33" width="400"/>
+  <img src="https://github.com/user-attachments/assets/d3af92fd-419a-47a0-ac70-57223c6dd1a7" width="400"/>
+</p>
+
+Instead of one big policy, create separate GPOs per OU (this is what companies actually do).
+
+**`Steps:`**
+- **Expand:**
+  - Forest → Domains → LAB.local
+- Right-click your OU (ex: HR)
+- Click → Create a GPO in this domain, and Link it here.
+- **Name it:**
+  - HR-GPO
+- Repeat for IT and Finance.
+
+**`Decide where you want the policy:`**
+- Domain Level (**applies to all**).
+- OR specific OU (**Organizational Unit**).
+
+There are two ways to create a new GPO.
+- **Option 1**: Creates the GPO first and links it to a domain or OU later.
+- **Option 2**: Creates and links the GPO at the same time.
+   
+**`Method I:`**
+- Click Group Policy Objects.
+- Right-click New.
+- Enter a name.
+- Click OK.
+
+**`Method II:`**
+- Right-click the OU or Domain.
+- Click Create a GPO in this domain, and Link it here.
+- Enter a name.
+- Click OK.
+<br>
+
+**`Step 3:`**
+<p align="center"> <strong>Configure Each Policy:</strong></p>
+<p align="center">
+  <strong>Finance-GPO:</strong><br>
+  <img src="https://github.com/user-attachments/assets/12e2270a-72a1-4d74-a230-c6dd37ba860b" width="400"/>
+  <img src="https://github.com/user-attachments/assets/151b9fc3-3fa6-4d92-b5f5-5b574ff942ad" width="400"/>
+</p>
+<p align="center">
+  <strong>HR-GPO:</strong><br>
+  <img src="https://github.com/user-attachments/assets/4fae738f-99ad-49c5-8ef6-3e5094f2a413" width="400"/>
+  <img src="https://github.com/user-attachments/assets/05ab93b4-42ea-44c0-95a3-6f048039d5be" width="400"/>
+</p>
+<p align="center">
+  <strong>IT-GPO:</strong><br>
+  <img src="https://github.com/user-attachments/assets/d9eee175-4a29-4f38-a0f3-167f79235182" width="400"/>
+  <img src="https://github.com/user-attachments/assets/448a981b-ca38-4f2e-90dd-dde63e099a7a" width="400"/>
+</p>
+
+**`Steps:`**
+- Right-click the GPO.
+- Click Edit.
+- **`Configure settings under:`**
+  - Computer Configuration (**applies on startup**).
+  - User Configuration (**applies on login**).
+- **`Navigate inside:`**
+  - Policies → Administrative Templates.
+  - Double-click any setting.
+- **`Choose:`**
+  - Enabled.
+  - Disabled.
+- Click Apply → OK.
+
+**`User Configs:`**
+- User Configuration → Policies → Administrative Templates → Control Panel → Personalization
+- **Set:**
+  - Screen saver timeout = 600 (10 min).
+  - Enable screen saver.
+- User Configuration → Policies → Administrative Templates → Control Panel
+- **Set:**
+  - Prohibit access to Control Panel = Enabled
+
+**`Computer Configs:`**
+- Computer Configuration → Policies → Windows Settings → Security Settings → Account Policies → Password Policy
+- **Set:**
+  - Minimum length: 8
+  - Complexity: Enabled
+  - Max age: 30 days
+<br>
+
+ **`Step 4:`**
+<p align="center"> <strong>Apply GPO to Specific OU:</strong></p>
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/0149e00e-59b8-4925-ac4c-a984a65c6b1e" width="400"/>
+  <img src="https://github.com/user-attachments/assets/3d6816ea-586f-4c92-9918-fa1f8ced9528" width="400"/>
+  <img src="https://github.com/user-attachments/assets/878761d4-041c-42aa-befe-c37e0ec5e360" width="400"/>
+</p>
+
+- If you created a GPO from an OU → already linked.
+
+- If not:
+  - Drag GPO to OU or Right-click OU → Link Existing GPO.
+
+ **`Step 5:`**
+<p align="center"> <strong>Verification:</strong></p>
+<p align="center">
+  <strong>Finance-GPO:</strong><br>
+  <img src="https://github.com/user-attachments/assets/ab126af8-fd66-4df5-b00c-e673e7e5f3a6" width="400"/>
+  <img src="https://github.com/user-attachments/assets/aa815971-3a55-4e11-82aa-7b4004c91dd1" width="400"/>
+  <img src="https://github.com/user-attachments/assets/064e19d5-c032-4713-a3f7-4e5d0b5d9271" width="400"/>
+</p>
+<p align="center">
+  <strong>HR-GPO:</strong><br>
+  <img src="https://github.com/user-attachments/assets/485eb9ed-c183-4354-aa31-eda6e3a5987a" width="400"/>
+  <img src="https://github.com/user-attachments/assets/abb64b7d-933c-4f00-a44b-ac6e66b47484" width="400"/>
+  <img src="https://github.com/user-attachments/assets/f7e1d51d-ed74-4b3d-a853-8b52d1ac6bca" width="400"/>
+</p>
+<p align="center">
+  <strong>IT-GPO:</strong><br>
+  <img src="https://github.com/user-attachments/assets/eabc44b7-f76f-4cbd-90be-f705eafef04c" width="400"/>
+  <img src="https://github.com/user-attachments/assets/acde8262-d890-45a6-862d-e5375c37d878" width="400"/>
+  <img src="https://github.com/user-attachments/assets/14f58004-0af7-477a-a8d9-f914baf8724f" width="400"/>
+</p>
+
+**`On your Windows client:`**
+1. **Force update:**
+   - gpupdate /force
+2. **Verify:**
+   - Try opening Control Panel (HR & IT user blocked).
+   - Check lock screen timeout.
+3. **Run:**
+   - gpresult /r
+- This shows Applied GPOs and which OU did it come from.
+<br>
+
+--------
