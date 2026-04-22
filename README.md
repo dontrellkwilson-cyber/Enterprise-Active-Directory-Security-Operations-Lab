@@ -408,6 +408,7 @@ This lab focuses on designing a structured Active Directory environment by creat
 - Validated domain authentication by logging in with Active Directory user accounts.
 
 **`Overview`**
+
 This phase involved designing a structured Organizational Unit (OU) hierarchy to reflect a real-world enterprise environment and provisioning users within each department. Departments such as HR, IT, and Finance were organized into OUs to support scalable management and policy application. The configuration was validated by joining a Windows client to the domain and confirming successful user authentication.
 <br>
 
@@ -578,6 +579,7 @@ There are two ways to create a new GPO.
 - This shows Applied GPOs and which OU did it come from.
 
 **`Overview`**
+
 This phase focused on implementing centralized control using Group Policy Objects (GPOs) to manage user and computer behavior across the domain. Department-specific GPOs were created and applied to enforce security settings such as password policies, screen lock timeouts, and system restrictions. The setup was tested by applying policies to client machines and verifying that different departments received the correct configurations.
 <br>
 
