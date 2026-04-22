@@ -302,6 +302,10 @@ Now both DCs can resolve each other.
 - Configured and authorized DHCP with a scoped IP range for client devices.
 - Optimized network settings by disabling DNS registration on the NAT adapter to prevent conflicts.
 - Tested domain functionality and verified DNS resolution across domain controllers.
+
+**`Overview`**
+
+This phase focused on building the core Active Directory infrastructure by configuring two domain controllers (DC01 and DC02) within an isolated network. Key services such as AD DS, DNS, and DHCP were installed, with DC01 acting as the primary controller and DC02 providing redundancy through replication. The setup was validated through DNS resolution, replication checks, and successful domain functionality testing.
 <br>
 
 --------
@@ -402,6 +406,9 @@ This lab focuses on designing a structured Active Directory environment by creat
 - Joined a Windows 10 client machine to the LAB.local domain.
 - Configured client DNS to use the Domain Controller for proper domain resolution.
 - Validated domain authentication by logging in with Active Directory user accounts.
+
+**`Overview`**
+This phase involved designing a structured Organizational Unit (OU) hierarchy to reflect a real-world enterprise environment and provisioning users within each department. Departments such as HR, IT, and Finance were organized into OUs to support scalable management and policy application. The configuration was validated by joining a Windows client to the domain and confirming successful user authentication.
 <br>
 
 --------
@@ -569,6 +576,11 @@ There are two ways to create a new GPO.
 3. **Run:**
    - gpresult /r
 - This shows Applied GPOs and which OU did it come from.
+
+**`Overview`**
+This phase focused on implementing centralized control using Group Policy Objects (GPOs) to manage user and computer behavior across the domain. Department-specific GPOs were created and applied to enforce security settings such as password policies, screen lock timeouts, and system restrictions. The setup was tested by applying policies to client machines and verifying that different departments received the correct configurations.
 <br>
 
 --------
+
+<h2 align="center"><strong>Phase IV: File Server & Permissions</strong></h2>
