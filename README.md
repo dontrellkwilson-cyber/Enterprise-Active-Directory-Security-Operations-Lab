@@ -1,5 +1,22 @@
 <h1 align="center">Enterprise Active Directory & Security Operations Lab</h1>
 
+<h2>Project Summary:</h2>
+
+Designed and implemented a multi-phase enterprise Active Directory lab simulating real-world IT operations, including system administration, network services, security hardening, automation, and troubleshooting.
+
+This project demonstrates:
+- Deployment of redundant Domain Controllers (DC01 & DC02) for high availability.
+- Centralized identity and access management using Active Directory.
+- Network services configuration (DNS, DHCP) for domain functionality.
+- Organizational Unit (OU) design and user provisioning.
+- Group Policy enforcement to control user and system behavior.
+- File server configuration with NTFS and share permissions using least privilege.
+- PowerShell automation for bulk user provisioning and administrative efficiency.
+- Security hardening and monitoring using account policies and event logging.
+- Troubleshooting and help desk simulation using real-world IT scenarios and tools.
+
+This lab simulates responsibilities across System Administration, IT Support, and Security Operations roles.
+
 <h2>Description:</h2>
 This project simulates a real-world enterprise IT environment using a Windows Server–based Active Directory infrastructure. The lab was designed to demonstrate core system administration skills, including identity and access management, network services configuration, automation, security hardening, and troubleshooting.
 
@@ -33,14 +50,32 @@ Group Policy Objects.<br>
 PowerShell.<br>
 </div>
 
+<h2 align="center">Key Skills Demonstrated:</h2>
+
+<div align="center">
+
+`Active Directory Administration` (**AD DS**).<br>
+`Group Policy Management` (**GPOs**).<br>
+`DNS & DHCP Configuration.`<br>
+`Identity & Access Management` (**IAM**).<br>
+`Network Segmentation & Design.`<br>
+`Windows Server Administration.`<br>
+`PowerShell` (**Basic Automation**).<br>
+
+</div>
+
 <h2>Environments Used:</h2>
 
 - VirtualBox.
 - Windows 10 Client (**`21H2`**).
 - Windows Server 2022.
 
-<h1 align="center">Lab Walk-Through:</h1>
+<h1 align="left">Lab Walk-Through:</h1>
+
+--------
 <h2 align="center"><strong>Phase I: Environment Setup</strong></h2>
+
+--------
 
 <b>`Active Directory Purpose & Key Concepts:`</b>
 - The server promoted to a domain controller is the most important system in a company’s network, as it hosts Active Directory.
@@ -53,6 +88,12 @@ PowerShell.<br>
 <b>`Lab Overview:`</b>
 
 This lab focuses on building a functional Active Directory environment by configuring two Domain Controllers (DC01 and DC02) within an isolated network. Core services, including AD DS, DNS, and DHCP, were installed and configured, with DC01 acting as the primary controller and DC02 providing redundancy through replication. The setup was validated by verifying DNS resolution, Active Directory functionality, and successful replication between domain controllers.
+
+**`Design Decisions:`**
+- Implemented two Domain Controllers to simulate redundancy and high availability in enterprise environments.
+- Separated external (NAT) and internal network traffic to reduce attack surface and reflect real-world network segmentation.
+- Used static IP addressing to ensure consistent communication for critical infrastructure services.
+- Configured DNS and replication to maintain directory consistency across domain controllers.
 
 <h3 align="center">Server Setup & Domain Controller Configuration:</h3>
 
@@ -70,12 +111,7 @@ This lab focuses on building a functional Active Directory environment by config
 
 **`Network Services Configuration:`**
 
-DC01 is configured as the primary Domain Controller with two network adapters to separate external access from internal domain traffic.
-- Adapter 1 (NAT) provides controlled internet access for updates and external connectivity.
-- Adapter 2 (Internal Network) is used for all Active Directory and internal communication between domain devices.
-
-DC02 is configured as a secondary Domain Controller with one network adapter.
-- Adapter 1 (Internal Network) keeps it isolated from the internet and dedicated to Active Directory services like authentication and replication.
+DC01 was configured with dual network adapters to separate external connectivity (NAT) from internal domain traffic, improving security and simulating enterprise network segmentation. DC02 operates solely on the internal network to reduce exposure and support secure authentication and replication.
 
 This setup isolates internal domain traffic while allowing DC01 limited external access for maintenance and updates.
 <br>
@@ -108,12 +144,8 @@ Using static IPs is critical in a domain environment to prevent IP changes that 
 </p>
 
 **`Server Renaming and Initial Configuration:`**
-- Open Server Manager.
-- Click Local Server on the left panel.
-- Locate the Computer Name field.
-- Click the current computer name and enter the System Properties window, click Change.
-- Enter the new Computer Name and click OK to apply changes.
-- Restart the server when prompted.
+
+Both servers were renamed to DC01 and DC02 to align with standard enterprise naming conventions for domain controllers. This ensures clarity in role identification, simplifies management, and supports easier troubleshooting within the environment.
 <br>
 
 **`Step 4:`**
@@ -125,15 +157,8 @@ Using static IPs is critical in a domain environment to prevent IP changes that 
 </p>
 
 **`Active Directory and Core Services Installation:`**
-- Open Server Manager → Add Roles and Features.
-- **`Install:`**
-  - Active Directory Domain Services (AD DS).
-  - DNS Server.
-  - DHCP Server.
- 
-**For DC02:**
-- **`Install:`**
-  - Active Directory Domain Services.
+
+Core infrastructure roles were installed to support the Active Directory environment. DC01 was configured with Active Directory Domain Services (AD DS), DNS, and DHCP to function as the primary domain controller and network services provider. DC02 was configured with AD DS to operate as a secondary domain controller, supporting redundancy and replication.
 <br>
 
 **`Step 5:`**
@@ -303,7 +328,7 @@ Now both DCs can resolve each other.
 - Optimized network settings by disabling DNS registration on the NAT adapter to prevent conflicts.
 - Tested domain functionality and verified DNS resolution across domain controllers.
 
-**`Overview`**
+**`Overview:`**
 
 This phase focused on building the core Active Directory infrastructure by configuring two domain controllers (DC01 and DC02) within an isolated network. Key services such as AD DS, DNS, and DHCP were installed, with DC01 acting as the primary controller and DC02 providing redundancy through replication. The setup was validated through DNS resolution, replication checks, and successful domain functionality testing.
 <br>
@@ -312,7 +337,12 @@ This phase focused on building the core Active Directory infrastructure by confi
 
 <h2 align="center"><strong>Phase II: Organizational Unit (OU) Design & User Provisioning</strong></h2>
 
-**`Organizational Unit (OU) Design & User Provisioning Key Concepts:`** 
+--------
+
+**`Objective:`**
+Design and implement an Organizational Unit structure and provision users to support scalable identity management.
+
+**`Key Concepts:`** 
 -  OU design follows business structure, such as departments, roles, or locations.
 -  User provisioning includes creating and configuring user accounts with the correct attributes and settings.
 -  Security groups are used to assign permissions and control access to resources.
@@ -416,6 +446,11 @@ This phase involved designing a structured Organizational Unit (OU) hierarchy to
 
 <h2 align="center"><strong>Phase III: Group Policy Management</strong></h2>
 
+--------
+
+**`Objective:`**
+Implement centralized control using Group Policy Objects to enforce security settings and standardize user and system configurations.
+
 **`GPOs Key Concepts:`** 
 -  Group Policy centralizes configuration for users and computers in an Active Directory domain.
 -  GPOs link to sites, domains, or OUs to apply settings based on structure.
@@ -436,13 +471,10 @@ This phase focuses on implementing centralized management through Group Policy O
   <img src="https://github.com/user-attachments/assets/cb087389-5dca-4003-a740-20cef7c5f423" width="400"/>
   <img src="https://github.com/user-attachments/assets/69d3f2ea-c795-4a44-80c5-37edbe6d6780" width="400"/>
 </p>
-
-This opens the console used to manage GPOs.
    
-**`Steps:`**
-- Open Server Manager.
-- Click Tools at the top right.
-- Select Group Policy Management.
+**`Group Policy Management Access:`**
+
+The Group Policy Management Console (GPMC) was accessed through Server Manager to centrally create, manage, and deploy Group Policy Objects (GPOs) across the domain.
 <br>
 
 **`Step 2:`**
@@ -453,36 +485,11 @@ This opens the console used to manage GPOs.
   <img src="https://github.com/user-attachments/assets/d3af92fd-419a-47a0-ac70-57223c6dd1a7" width="400"/>
 </p>
 
-Instead of one big policy, create separate GPOs per OU (this is what companies actually do).
+**`Creating and Linking Group Policy Objects:`**
 
-**`Steps:`**
-- **Expand:**
-  - Forest → Domains → LAB.local
-- Right-click your OU (ex: HR)
-- Click → Create a GPO in this domain, and Link it here.
-- **Name it:**
-  - HR-GPO
-- Repeat for IT and Finance.
+Separate Group Policy Objects (GPOs) were created for each departmental Organizational Unit (HR, IT, Finance) to enable targeted policy enforcement. This approach follows enterprise best practices by avoiding a single monolithic policy and allowing for granular control, scalability, and simplified troubleshooting.
 
-**`Decide where you want the policy:`**
-- Domain Level (**applies to all**).
-- OR specific OU (**Organizational Unit**).
-
-There are two ways to create a new GPO.
-- **Option 1**: Creates the GPO first and links it to a domain or OU later.
-- **Option 2**: Creates and links the GPO at the same time.
-   
-**`Method I:`**
-- Click Group Policy Objects.
-- Right-click New.
-- Enter a name.
-- Click OK.
-
-**`Method II:`**
-- Right-click the OU or Domain.
-- Click Create a GPO in this domain, and Link it here.
-- Enter a name.
-- Click OK.
+Each GPO was linked directly to its respective OU to ensure policies were applied based on organizational structure.
 <br>
 
 **`Step 3:`**
@@ -586,3 +593,5 @@ This phase focused on implementing centralized control using Group Policy Object
 --------
 
 <h2 align="center"><strong>Phase IV: File Server & Permissions</strong></h2>
+
+--------
