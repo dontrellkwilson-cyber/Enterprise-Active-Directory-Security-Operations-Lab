@@ -78,7 +78,7 @@ PowerShell.<br>
 --------
 
 <b>`Active Directory Purpose & Key Concepts:`</b>
-- The server promoted to a domain controller is the most important system in a company’s network, as it hosts Active Directory.
+- A domain controller is a critical system in enterprise networks, responsible for authentication, authorization, and policy enforcement.
 - Active Directory provides centralized identity and access management.
 - A domain controller hosts Active Directory and handles authentication and security policies across the network.
 - Active Directory manages authentication, passwords, logins, users, groups, and computers, and controls access through permissions and group policies.
@@ -316,28 +316,12 @@ This lab focuses on designing a structured Active Directory environment by creat
   <img src="https://github.com/user-attachments/assets/33de875c-d25a-4c1e-a192-8880011805c9" width="400"/>
 </p>
 
-**`Open Active Directory:`**
-- **On DC01:**
-  - Open Active Directory Users and Computers
+**`Organizational Unit (OU) Design:`**
 
-**`Create Parent OU (“Company”):`**
-- **Right-click:**
-  - LAB.local
-- **Click:**
-  - Company
-- **Name it:**
-  - Company
-- Click OK
+A hierarchical Organizational Unit structure was created to reflect a real-world enterprise environment. A parent "Company" OU was established, with child OUs for departments such as HR, IT, and Finance.
 
-**`Create Child OUs inside “Company:”`**
-- **Now expand:**
-  - LAB.local → Company
-
-**`Create HR OU, IT OU, and Finance OU:`**
-- Right-click Company
-- New → Organizational Unit
-- Name:
-- Click OK.
+This structure supports scalable management, delegation of administrative control, and targeted Group Policy application.
+<br>
 
 **`Step 2:`**
 <p align="center"><strong>Creating Departmental OU Users:</strong></p>
@@ -350,11 +334,11 @@ This lab focuses on designing a structured Active Directory environment by creat
   <img src="https://github.com/user-attachments/assets/e4ec89e4-a504-4926-88e4-72fd0ffcc979" width="400"/>
 </p>
 
-**`Inside each OU:`**
-- Right-click → New → User
-- **Repeat for:**
-  - IT OU
-  - Finance OU
+**`User Provisioning:`**
+
+User accounts were created within each departmental OU to simulate real-world identity management. This approach ensures users are logically organized and allows policies and permissions to be applied based on department.
+
+Standardized naming conventions were used to maintain consistency and support easier administration.
 <br>
 
 **`Step 3:`**
@@ -365,16 +349,11 @@ This lab focuses on designing a structured Active Directory environment by creat
   <img src="https://github.com/user-attachments/assets/d0588740-e4bc-43b5-b3fc-3562b4212adb" width="400"/>
 </p>
 
-**`Steps:`**
-- Set the client DNS to the domain controller IP address **192.168.1.10**.
-- Open system settings on the Windows 10 client.
-- System → About Rename this PC (advanced).
-- Click Change.
-- Choose the Domain option.
-- Enter the domain name.
-- Provide domain admin credentials.
-- Restart the client machine.
-- After reboot, sign in using a domain user account.
+**`Client Domain Integration:`**
+
+A Windows 10 client machine was joined to the LAB.local domain to validate domain functionality. DNS was configured to point to the domain controller, ensuring proper domain resolution.
+
+Successful login using domain credentials confirmed proper authentication and integration with Active Directory.
 
 **`Key Tasks Completed:`**
 - Designed and implemented an Organizational Unit (OU) structure to mirror a real-world enterprise environment.
@@ -459,35 +438,11 @@ Each GPO was linked directly to its respective OU to ensure policies were applie
   <img src="https://github.com/user-attachments/assets/448a981b-ca38-4f2e-90dd-dde63e099a7a" width="400"/>
 </p>
 
-**`Steps:`**
-- Right-click the GPO.
-- Click Edit.
-- **`Configure settings under:`**
-  - Computer Configuration (**applies on startup**).
-  - User Configuration (**applies on login**).
-- **`Navigate inside:`**
-  - Policies → Administrative Templates.
-  - Double-click any setting.
-- **`Choose:`**
-  - Enabled.
-  - Disabled.
-- Click Apply → OK.
+**`Group Policy Configuration:`**
 
-**`User Configs:`**
-- User Configuration → Policies → Administrative Templates → Control Panel → Personalization
-- **Set:**
-  - Screen saver timeout = 600 (10 min).
-  - Enable screen saver.
-- User Configuration → Policies → Administrative Templates → Control Panel
-- **Set:**
-  - Prohibit access to Control Panel = Enabled
+Department-specific policies were configured within each GPO to enforce security and system behavior standards. Settings included password policies, screen lock timeouts, and restrictions on system tools such as the Control Panel.
 
-**`Computer Configs:`**
-- Computer Configuration → Policies → Windows Settings → Security Settings → Account Policies → Password Policy
-- **Set:**
-  - Minimum length: 8
-  - Complexity: Enabled
-  - Max age: 30 days
+These configurations demonstrate centralized control and consistent policy enforcement across the domain.
 <br>
 
  **`Step 4:`**
@@ -544,3 +499,6 @@ This phase focused on implementing centralized control using Group Policy Object
 <h2 align="center"><strong>Phase IV: File Server & Permissions</strong></h2>
 
 --------
+
+**`Objective:`**
+Configure file services and access controls to enforce least privilege and secure shared resources.
