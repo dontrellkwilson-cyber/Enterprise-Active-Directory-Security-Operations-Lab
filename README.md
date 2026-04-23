@@ -265,17 +265,17 @@ Successful testing verified that the domain environment was fully operational an
 <br>
 
 **`Key Tasks Completed:`**
-- Configured a dual Domain Controller environment (DC01 & DC02) for redundancy and high availability.
-- Designed network architecture using NAT (internet access) and an isolated internal network.
-- Assigned static IP addresses to ensure consistent communication for Active Directory services.
-- Installed and configured Active Directory Domain Services (AD DS), DNS, and DHCP.
-- Deployed a new Active Directory forest (LAB.local) and promoted DC01 as the primary Domain Controller.
-- Joined DC02 to the domain and promoted it as a secondary Domain Controller.
-- Configured DNS for proper name resolution and followed best practices for multi-DC environments.
-- Verified Active Directory health using replication tools (repadmin, AD Sites and Services).
-- Configured and authorized DHCP with a scoped IP range for client devices.
-- Optimized network settings by disabling DNS registration on the NAT adapter to prevent conflicts.
-- Tested domain functionality and verified DNS resolution across domain controllers.
+- Engineered a dual Domain Controller architecture (DC01/DC02) to simulate high availability and fault tolerance in an enterprise environment.
+- Designed segmented network architecture using NAT (external) and isolated internal networks to reduce attack surface and mirror real-world infrastructure.
+- Implemented static IP addressing for critical systems to ensure consistent DNS resolution and reliable domain communication.
+- Deployed Active Directory Domain Services (AD DS), DNS, and DHCP to establish core identity and network services.
+- Built a new Active Directory forest (**`LAB.local`**) and promoted DC01 as the primary Domain Controller.
+- Integrated and promoted DC02 as a secondary Domain Controller to support redundancy and directory replication.
+- Configured DNS for multi-DC support, ensuring accurate name resolution and service reliability.
+- Validated AD health and replication using tools such as **`repadmin`** and Active Directory Sites and Services.
+- Configured and authorized DHCP with a defined scope (**`192.168.1.100–200`**) to automate client IP assignment.
+- Optimized network configuration by disabling DNS registration on external interfaces to prevent conflicts.
+- Performed system validation using **`ipconfig`** and **`nslookup`** to confirm.
 
 **`Overview:`**
 
@@ -356,14 +356,14 @@ A Windows 10 client machine was joined to the LAB.local domain to validate domai
 Successful login using domain credentials confirmed proper authentication and integration with Active Directory.
 
 **`Key Tasks Completed:`**
-- Designed and implemented an Organizational Unit (OU) structure to mirror a real-world enterprise environment.
-- Created a hierarchical OU model with a parent Company OU and departmental OUs (HR, IT, Finance).
-- Provisioned user accounts within each department using standardized naming conventions.
-- Organized users logically to support scalable management and policy application.
-- Demonstrated understanding of Active Directory object types (users vs OUs).
-- Joined a Windows 10 client machine to the LAB.local domain.
-- Configured client DNS to use the Domain Controller for proper domain resolution.
-- Validated domain authentication by logging in with Active Directory user accounts.
+- Designed and implemented a hierarchical Organizational Unit (OU) structure aligned with departmental functions (**`HR, IT, Finance`**) to support scalable identity management.
+- Structured Active Directory objects to enable efficient policy application, delegation, and administrative organization.
+- Provisioned user accounts within departmental OUs using standardized naming conventions to ensure consistency and manageability.
+- Applied logical grouping of users and resources to support role-based access control (RBAC) principles.
+- Demonstrated understanding of Active Directory object types and relationships (**`users, groups, OUs`**).
+- Integrated a Windows 10 client into the domain environment to simulate enterprise endpoint management.
+- Configured client DNS settings to ensure proper domain resolution and authentication.
+- Validated successful domain authentication through user login testing across multiple accounts.
 
 **`Overview`**
 
@@ -488,6 +488,15 @@ These configurations demonstrate centralized control and consistent policy enfor
 3. **Run:**
    - gpresult /r
 - This shows Applied GPOs and which OU did it come from.
+
+**`Key Tasks Completed:`**
+- Implemented centralized configuration management using Group Policy Objects (GPOs) across departmental OUs.
+- Designed and deployed department-specific GPOs to enforce targeted security and system configurations.
+- Applied security controls, including password policies, account restrictions, and system access limitations.
+- Enforced user environment restrictions (e.g., Control Panel access, system settings) to standardize endpoint behavior.
+- Linked GPOs to Organizational Units to ensure precise and scalable policy application.
+- Validated policy deployment using **`gpupdate /force`** and **`gpresult /r`** to confirm correct inheritance and application.
+- Tested and confirmed differentiated policy behavior across departments in a client environment.
 
 **`Overview`**
 
