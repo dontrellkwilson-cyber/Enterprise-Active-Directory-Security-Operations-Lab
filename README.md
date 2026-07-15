@@ -509,21 +509,1353 @@ This phase focused on implementing centralized control using Group Policy Object
 
 --------
 
-**`Objective:`**
-Configure file services and access controls to enforce least privilege and secure shared resources.
+**`Objective:`**  
+Deploy a dedicated domain member file server and configure secure departmental shares using Active Directory security groups, NTFS permissions, share permissions, and Group Policy drive mapping.
 
-**`File Server & Permissions Key Concepts:`**
-- A file server centralizes shared company resources so users can access approved folders over the network.
-- Shared folders use UNC paths such as \\fileserver\HR and \\fileserver\IT.
-- Share permissions control access to the folder through the network.
-- NTFS permissions control what users can do with files and folders, including read, modify, write, or full control.
-- Security groups should be assigned permissions instead of individual user accounts.
-- Department-based permissions prevent HR users from accessing IT files and IT users from accessing HR files.
-- Using both share and NTFS permissions helps protect company data and maintain proper access control.
+**`Key Concepts:`**
+- File services should be separated from Domain Controllers whenever possible.
+- NTFS permissions control access to files and folders on the server.
+- Share permissions control access when users connect through the network.
+- The most restrictive combination of NTFS and share permissions determines effective access.
+- Security groups should be used instead of assigning permissions directly to individual users.
+- The AGDLP model organizes access by placing accounts into global groups, global groups into domain-local groups, and permissions on the domain-local groups.
+- Access-based enumeration prevents users from browsing shared resources they are not authorized to access.
+- Group Policy Preferences can map department drives automatically based on security-group membership.
 
 <b>`Lab Overview:`</b>
 
-This lab demonstrates the deployment of a dedicated Windows Server 2022 file server joined to the LAB.local Active Directory domain. It includes a separate data drive, HR and IT SMB shares, AGDLP-based security groups, NTFS and share permissions, access-based enumeration, permission testing, and automatic department drive mapping through Group Policy.
+This phase expanded the LAB.local environment by deploying a dedicated Windows Server 2022 domain member named FILESERVER. A separate data volume was used to store departmental resources, and SMB shares were created for HR and IT. Access was assigned via Active Directory security groups using the AGDLP model rather than direct user permissions. NTFS and share permissions were configured to enforce the principle of least privilege, and department drives were automatically mapped through Group Policy. The completed configuration was validated by confirming that HR and IT users could access only their authorized resources.
 
-<h3 align="center">Deploying and Securing Department File Shares:</h3>
+<h3 align="center">Dedicated File Server Deployment and Access Control:</h3>
 
+**`Step 1:`**
+
+<p align="center"><strong>Deploying and Validating FILESERVER:</strong></p>
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/569654e1-3f09-4234-a6ce-4f2b3868624f" alt="Security Groups configuration" width="700">
+</p>
+
+**`FILESERVER Domain Integration:`**
+
+A separate Windows Server 2022 virtual machine was configured as FILESERVER and joined to the LAB.local domain. The server was assigned the static IP address **192.168.1.20** and configured to use DC01 and DC02 for DNS resolution.
+
+The following commands were used to validate the server configuration and domain connectivity:
+
+```powershell
+hostname
+ipconfig /all
+ping DC01
+ping DC02
+nslookup LAB.local
+nltest /dsgetdc:LAB.local
+```
+
+Successful DNS resolution and domain controller discovery confirmed that FILESERVER was properly integrated into the Active Directory environment.
+<br>
+
+**`Step 2:`**
+
+<p align="center"><strong>Creating a Dedicated Data Volume and Department Folders:</strong></p>
+
+**`Data Storage Configuration:`**
+
+A separate virtual disk was added to FILESERVER, initialized using GPT, assigned drive letter **D:**, and labeled **DATA**. Using a dedicated data volume separates company resources from the operating system and supports easier management, backup, and recovery.
+
+The department folder structure was created using PowerShell:
+
+```powershell
+New-Item -Path "D:\Shares" -ItemType Directory
+New-Item -Path "D:\Shares\HR" -ItemType Directory
+New-Item -Path "D:\Shares\IT" -ItemType Directory
+```
+
+No screenshot was required for this step because the final folder, share, and permission configuration was later verified via PowerShell.
+<br>
+
+**`Step 3:`**
+
+<p align="center"><strong>Installing the File Server Role:</strong></p>
+
+**` File Services Installation:`**
+
+The File Server role was installed through Server Manager under **File and Storage Services**. This enabled FILESERVER to host and manage SMB network shares for domain users.
+
+The role installation wizard was not included as evidence because the completed SMB shares and PowerShell verification provide stronger proof that the service was configured successfully.
+<br>
+
+**`Step 4:`**
+
+<p align="center"><strong>Creating Department Security Groups and AGDLP Membership:</strong></p>
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/0bb3037f-413b-4f7e-9dfe-e39508322da0" alt="Security group configuration" width="700">
+  <br><br>
+  <img src="https://github.com/user-attachments/assets/b2b6b558-b158-4442-90a1-5eb888d424d7" alt="Security group verification" width="700">
+</p>
+
+**`Security Group Design:`**
+
+A **Security Groups** OU was created under the existing Company OU. The following global and domain-local security groups were created:
+
+- `GG_HR_Users`
+- `GG_IT_Users`
+- `GG_Finance_Users`
+- `DL_FS_HR_Modify`
+- `DL_FS_IT_Modify`
+
+Department user accounts were assigned to their corresponding global groups. The global groups were then nested into the appropriate domain-local file-access groups:
+
+```text
+HR Accounts
+→ GG_HR_Users
+→ DL_FS_HR_Modify
+→ HR Folder Permissions
+```
+
+```text
+IT Accounts
+→ GG_IT_Users
+→ DL_FS_IT_Modify
+→ IT Folder Permissions
+```
+
+This configuration follows the AGDLP model and allows access to be managed by changing group membership instead of editing folder permissions for each user.
+<br>
+
+**`Step 5:`**
+
+<p align="center"><strong>Configuring NTFS Permissions:</strong></p>
+
+**`NTFS Access Control:`**
+
+Inheritance was disabled on the HR and IT department folders to remove unintended access from broad groups. The following NTFS permissions were applied:
+
+| Folder | Security Principal | NTFS Permission |
+|---|---|---|
+| `D:\Shares\HR` | `SYSTEM` | Full Control |
+| `D:\Shares\HR` | `Administrators` | Full Control |
+| `D:\Shares\HR` | `LAB\DL_FS_HR_Modify` | Modify |
+| `D:\Shares\IT` | `SYSTEM` | Full Control |
+| `D:\Shares\IT` | `Administrators` | Full Control |
+| `D:\Shares\IT` | `LAB\DL_FS_IT_Modify` | Modify |
+
+The permissions were applied to each folder, its subfolders, and files. Users were not assigned directly to either folder.
+<br>
+
+**`Step 6:`**
+
+<p align="center"><strong>Creating the HR and IT SMB Shares:</strong></p>
+
+**`SMB Share Configuration:`**
+
+Two network shares were created through **Server Manager → File and Storage Services → Shares**:
+
+```text
+\\FILESERVER\HR
+\\FILESERVER\IT
+```
+
+The default `Everyone` share permission was removed. Administrators retained Full Control, while the matching domain-local access group received Change and Read permissions. Access-based enumeration was also enabled to reduce visibility of unauthorized shared resources.
+
+This configuration requires users to be authorized by both the SMB share permissions and the NTFS permissions.
+<br>
+
+**`Step 7:`**
+
+<p align="center"><strong>Verifying Share and NTFS Permissions:</strong></p>
+
+<!-- SCREENSHOT IV-04
+Insert one PowerShell image showing:
+Get-SmbShare
+Get-SmbShareAccess -Name HR
+Get-SmbShareAccess -Name IT
+icacls "D:\Shares\HR"
+icacls "D:\Shares\IT"
+-->
+
+<p align="center">
+  <!-- <img src="PASTE-IV-04-IMAGE-URL-HERE" width="800"/> -->
+</p>
+
+**`Permission Verification:`**
+
+PowerShell was used to verify the final SMB share and NTFS access-control configuration:
+
+```powershell
+Get-SmbShare
+Get-SmbShareAccess -Name HR
+Get-SmbShareAccess -Name IT
+icacls "D:\Shares\HR"
+icacls "D:\Shares\IT"
+```
+
+The results confirmed that each department share was assigned to the correct domain-local group and that the matching group received the required Change/Read share access and Modify NTFS access.
+<br>
+
+**`Step 8:`**
+
+<p align="center"><strong>Testing Department Access Separation:</strong></p>
+
+<!-- SCREENSHOTS IV-05 AND IV-06
+IV-05: HR user can access HR and receives Access Denied for IT.
+IV-06: IT user can access IT and receives Access Denied for HR.
+-->
+
+<p align="center">
+  <!-- <img src="PASTE-IV-05-IMAGE-URL-HERE" width="400"/> -->
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <!-- <img src="PASTE-IV-06-IMAGE-URL-HERE" width="400"/> -->
+</p>
+
+**`Access Validation:`**
+
+Department access was tested from CLIENT01 using separate HR and IT user sessions. Existing SMB sessions were cleared before switching accounts:
+
+```cmd
+net use * /delete /y
+```
+
+The HR user successfully created and modified a test file inside `\\FILESERVER\HR` but received an Access Denied message when attempting to open `\\FILESERVER\IT`.
+
+The IT user successfully accessed `\\FILESERVER\IT` but received an Access Denied message when attempting to open `\\FILESERVER\HR`.
+
+The following commands were also used to confirm the active user and security-group token:
+
+```cmd
+whoami
+whoami /groups
+```
+
+These tests confirmed that least privilege and department separation were operating as intended.
+<br>
+
+**`Step 9:`**
+
+<p align="center"><strong>Mapping Department Drives through Group Policy:</strong></p>
+
+<!-- SCREENSHOT IV-07
+Show HR receiving H: only and IT receiving I: only.
+Use two images side by side if necessary.
+-->
+
+<p align="center">
+  <!-- <img src="PASTE-IV-07-HR-IMAGE-URL-HERE" width="400"/> -->
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <!-- <img src="PASTE-IV-07-IT-IMAGE-URL-HERE" width="400"/> -->
+</p>
+
+**`Automated Drive Mapping:`**
+
+A Group Policy Object named **Department Drive Maps** was created and linked to the Company OU. Group Policy Preferences and item-level targeting were used to assign drives based on department-group membership:
+
+| Department | Network Path | Drive Letter | Target Group |
+|---|---|---|---|
+| HR | `\\FILESERVER\HR` | `H:` | `LAB\GG_HR_Users` |
+| IT | `\\FILESERVER\IT` | `I:` | `LAB\GG_IT_Users` |
+
+The policy was refreshed and verified using:
+
+```cmd
+gpupdate /force
+gpresult /r
+net use
+```
+
+After signing out and back in, HR users received only the `H:` drive and IT users received only the `I:` drive.
+<br>
+
+**`Key Tasks Completed:`**
+- Deployed a dedicated Windows Server 2022 domain member for enterprise file services.
+- Assigned a static IP address and integrated FILESERVER with the LAB.local domain.
+- Created a separate data volume and departmental folder structure.
+- Installed and validated the Windows File Server role.
+- Created global and domain-local security groups using the AGDLP access model.
+- Configured NTFS permissions and SMB share permissions through security groups.
+- Removed broad access and enforced least privilege between HR and IT.
+- Enabled access-based enumeration on departmental shares.
+- Verified effective permissions through PowerShell.
+- Tested successful and denied access using separate department accounts.
+- Automated department drive mapping through Group Policy Preferences and item-level targeting.
+
+**`Overview:`**
+
+This phase implemented a dedicated enterprise file server and secured departmental resources through group-based access control. HR and IT shares were configured using NTFS and SMB permissions, validated through PowerShell, and tested from the user perspective. Department drives were then mapped automatically through Group Policy, demonstrating practical experience with Windows file services, Active Directory groups, least privilege, and centralized resource management.
+<br>
+
+--------
+
+<h2 align="center"><strong>Phase V: DHCP Validation & Automated Client Addressing</strong></h2>
+
+--------
+
+**`Objective:`**  
+Validate the existing DHCP deployment, confirm correct scope and DNS options, and verify that domain clients receive usable network settings automatically.
+
+**`Key Concepts:`**
+- DHCP centrally assigns IPv4 addresses and network configuration to clients.
+- DHCP authorization in Active Directory helps prevent unauthorized Windows DHCP servers from servicing domain clients.
+- Scope options provide DNS servers and the Active Directory DNS suffix.
+- Domain clients should use internal Active Directory DNS servers rather than public DNS servers.
+- DHCP leases and DNS registration should be verified from both the server and client perspective.
+- An isolated lab without a configured router should not receive a false default-gateway value.
+
+<b>`Lab Overview:`</b>
+
+This phase validated the DHCP service that was originally installed during Phase I. Instead of reinstalling the role, the existing DC01 scope was reviewed for authorization, address range, DNS server options, and dynamic DNS updates. CLIENT01 was returned to automatic addressing, renewed its lease, and successfully received an IP address from the configured scope. DNS resolution and domain controller discovery were then tested to confirm that DHCP, DNS, and Active Directory were functioning together.
+
+<h3 align="center">DHCP Scope, Lease, and DNS Validation:</h3>
+
+**`Step 1:`**
+
+<p align="center"><strong>Verifying the Authorized DHCP Scope:</strong></p>
+
+<!-- SCREENSHOT V-01
+Show DHCP console:
+- DC01 healthy/authorized
+- active IPv4 scope
+- 192.168.1.100-192.168.1.200 address pool
+-->
+
+<p align="center">
+  <!-- <img src="PASTE-V-01-IMAGE-URL-HERE" width="800"/> -->
+</p>
+
+**`DHCP Scope Verification:`**
+
+The DHCP management console was opened on DC01 to confirm that the server was authorized in Active Directory and that the existing IPv4 scope was active.
+
+The configured address pool was verified as:
+
+```text
+192.168.1.100 - 192.168.1.200
+```
+
+This range separates dynamically assigned client addresses from the static addresses reserved for domain controllers and servers.
+<br>
+
+**`Step 2:`**
+
+<p align="center"><strong>Validating DHCP Scope Options:</strong></p>
+
+<!-- SCREENSHOT V-02
+Show:
+- Option 006 = 192.168.1.10 and 192.168.1.11
+- Option 015 = LAB.local
+- no incorrect Option 003 Router
+-->
+
+<p align="center">
+  <!-- <img src="PASTE-V-02-IMAGE-URL-HERE" width="800"/> -->
+</p>
+
+**`Scope Option Configuration:`**
+
+The DHCP scope options were reviewed to confirm that domain clients receive the correct DNS configuration:
+
+| DHCP Option | Configured Value |
+|---|---|
+| `006 DNS Servers` | `192.168.1.10`, `192.168.1.11` |
+| `015 DNS Domain Name` | `LAB.local` |
+
+Option `003 Router` was intentionally left blank because the internal lab network did not have a configured router or routing service. This prevented clients from receiving an invalid default gateway.
+<br>
+
+**`Step 3:`**
+
+<p align="center"><strong>Configuring Dynamic DNS Updates:</strong></p>
+
+**`DHCP and DNS Integration:`**
+
+The DHCP scope DNS settings were configured to support automatic creation and cleanup of client DNS records. Dynamic updates were enabled for A and PTR records, and DNS records were configured for removal when the related lease was deleted.
+
+This configuration supports accurate name resolution and reduces stale client records in the DNS zones.
+
+<!-- OPTIONAL SCREENSHOT V-03
+The DNS tab may be shown in the evidence folder, but it can be omitted from the main README.
+-->
+<br>
+
+**`Step 4:`**
+
+<p align="center"><strong>Renewing and Verifying the CLIENT01 Lease:</strong></p>
+
+<!-- SCREENSHOT V-04
+Show ipconfig /all with:
+- DHCP Enabled = Yes
+- address between .100 and .200
+- DHCP server = 192.168.1.10
+- DNS = .10 and .11
+- LAB.local suffix
+-->
+
+<p align="center">
+  <!-- <img src="PASTE-V-04-IMAGE-URL-HERE" width="800"/> -->
+</p>
+
+**`Client Address Assignment:`**
+
+CLIENT01 was configured to obtain both its IPv4 address and DNS settings automatically. The existing lease was released and renewed:
+
+```cmd
+ipconfig /release
+ipconfig /renew
+ipconfig /all
+```
+
+The client received an address from the approved DHCP range, identified DC01 as the DHCP server, and received DC01 and DC02 as its DNS servers.
+<br>
+
+**`Step 5:`**
+
+<p align="center"><strong>Testing DNS Resolution and Domain Discovery:</strong></p>
+
+<!-- SCREENSHOT V-05
+One command window showing successful:
+nslookup LAB.local
+nslookup DC01.LAB.local
+nslookup FILESERVER.LAB.local
+ping DC01
+ping FILESERVER
+nltest /dsgetdc:LAB.local
+-->
+
+<p align="center">
+  <!-- <img src="PASTE-V-05-IMAGE-URL-HERE" width="800"/> -->
+</p>
+
+**`Domain Services Validation:`**
+
+The client’s ability to locate domain resources was tested with the following commands:
+
+```cmd
+nslookup LAB.local
+nslookup DC01.LAB.local
+nslookup FILESERVER.LAB.local
+ping DC01
+ping FILESERVER
+nltest /dsgetdc:LAB.local
+```
+
+Successful hostname resolution and domain controller discovery confirmed that the DHCP-provided DNS settings supported Active Directory communication.
+<br>
+
+**`Step 6:`**
+
+<p align="center"><strong>Confirming the Active DHCP Lease:</strong></p>
+
+<!-- SCREENSHOT V-06
+Show the DHCP Address Leases pane with:
+- CLIENT01 hostname
+- leased address
+- active lease information
+-->
+
+<p align="center">
+  <!-- <img src="PASTE-V-06-IMAGE-URL-HERE" width="800"/> -->
+</p>
+
+**`Lease Verification:`**
+
+The DHCP Address Leases pane was reviewed to confirm that CLIENT01 was registered under the active scope with the expected hostname and leased IPv4 address.
+
+This server-side verification matched the network information reported by `ipconfig /all` on the client.
+<br>
+
+**`Key Tasks Completed:`**
+- Validated the DHCP role already deployed on DC01.
+- Confirmed Active Directory authorization and active scope status.
+- Verified the `192.168.1.100–192.168.1.200` client address pool.
+- Configured internal DNS servers and the LAB.local DNS suffix through DHCP options.
+- Avoided assigning an invalid default gateway in the isolated network.
+- Enabled DHCP-related dynamic DNS updates.
+- Renewed and verified CLIENT01’s DHCP lease.
+- Confirmed client DNS resolution and Active Directory domain discovery.
+- Verified the active lease from the DHCP server console.
+
+**`Overview:`**
+
+This phase validated centralized client address assignment without duplicating the DHCP deployment completed earlier. Scope settings, DNS options, client leases, hostname resolution, and domain discovery were confirmed from both the server and client perspectives. The results demonstrated that DHCP, DNS, and Active Directory were correctly integrated.
+<br>
+
+--------
+
+<h2 align="center"><strong>Phase VI: PowerShell-Based Active Directory User Provisioning</strong></h2>
+
+--------
+
+**`Objective:`**  
+Automate Active Directory user creation, OU placement, account configuration, and department-group assignment through a reusable CSV-driven PowerShell workflow.
+
+**`Key Concepts:`**
+- CSV files provide structured input for repeatable user provisioning.
+- PowerShell reduces repetitive Active Directory administration.
+- Users should be placed into the correct OU during creation.
+- Department, title, UPN, password settings, and group membership can be assigned automatically.
+- Scripts should validate required objects, prevent duplicate usernames, and report errors.
+- Automation files should be stored in the repository as code rather than screenshots.
+
+<b>`Lab Overview:`</b>
+
+This phase introduced PowerShell automation to provision Active Directory users at scale. A CSV file was created with identity and department information, and a PowerShell script was developed to create enabled accounts, assign the correct Organizational Unit, configure account attributes, require a password change, and add users to their department security group. The script was tested with a bulk set of lab accounts and verified through Active Directory PowerShell commands.
+
+<h3 align="center">CSV-Driven User Creation and Group Assignment:</h3>
+
+**`Step 1:`**
+
+<p align="center"><strong>Creating the User Provisioning CSV:</strong></p>
+
+**`Structured User Data:`**
+
+A CSV file named `users.csv` was created in `C:\LabFiles` with the following fields:
+
+```csv
+FirstName,LastName,Username,Department,Title
+Avery,Carter,acarter,HR,HR Specialist
+Morgan,Reed,mreed,HR,Recruiting Assistant
+Jordan,Lee,jlee,IT,Help Desk Technician
+Cameron,Price,cprice,IT,Systems Support Specialist
+Taylor,Brooks,tbrooks,Finance,Financial Analyst
+Riley,Adams,radams,Finance,Accounts Payable Clerk
+```
+
+The Department values were matched exactly to the existing HR, IT, and Finance OU and security-group naming structure.
+
+> The actual `users.csv` file should be uploaded to the GitHub repository instead of using a screenshot.
+<br>
+
+**`Step 2:`**
+
+<p align="center"><strong>Developing the Active Directory Provisioning Script:</strong></p>
+
+**`PowerShell Automation Logic:`**
+
+A reusable PowerShell script named `Create-LabUsers.ps1` was created to:
+
+- Import the Active Directory module.
+- Read user records from the CSV.
+- Confirm that each destination OU exists.
+- Confirm that each department security group exists.
+- Detect and skip duplicate usernames.
+- Create enabled user accounts.
+- Assign the correct OU, UPN, department, and title.
+- Set a temporary password securely.
+- Require a password change at the first sign-in.
+- Add each account to its matching department group.
+- Report successful actions and errors.
+
+> The complete `Create-LabUsers.ps1` file should be uploaded to the repository or displayed in a collapsible code section instead of using screenshots of the entire script.
+<br>
+
+**`Step 3:`**
+
+<p align="center"><strong>Generating and Provisioning Bulk Test Users:</strong></p>
+
+<!-- SCREENSHOT VI-01
+Show the final portion of the script run:
+- multiple successful Created messages
+- more than one department represented
+- no visible password
+- no uncorrected errors
+-->
+
+<p align="center">
+  <!-- <img src="PASTE-VI-01-IMAGE-URL-HERE" width="800"/> -->
+</p>
+
+**`Bulk Provisioning Execution:`**
+
+An optional PowerShell command generated 50 structured test-user records across HR, IT, and Finance. The provisioning script was then executed from DC01:
+
+```powershell
+Set-ExecutionPolicy RemoteSigned -Scope Process
+C:\LabFiles\Create-LabUsers.ps1
+```
+
+The script created the accounts and automatically placed each user into the correct department OU and global security group. Representative successful output was captured without exposing the temporary password.
+<br>
+
+**`Step 4:`**
+
+<p align="center"><strong>Verifying User Attributes, OU Placement, and Group Membership:</strong></p>
+
+<!-- SCREENSHOT VI-02
+Show combined PowerShell output proving:
+- correct OU paths
+- department group memberships
+- one user's Department, Title, and UserPrincipalName
+-->
+
+<p align="center">
+  <!-- <img src="PASTE-VI-02-IMAGE-URL-HERE" width="800"/> -->
+</p>
+
+**`Automation Verification:`**
+
+The created accounts were validated using Active Directory PowerShell commands:
+
+```powershell
+Get-ADUser `
+    -SearchBase "OU=Company,DC=LAB,DC=local" `
+    -Filter * |
+    Select-Object Name, SamAccountName, DistinguishedName
+
+Get-ADGroupMember "GG_HR_Users"
+Get-ADGroupMember "GG_IT_Users"
+Get-ADGroupMember "GG_Finance_Users"
+
+Get-ADUser acarter -Properties Department,Title,UserPrincipalName |
+    Select-Object Name,Department,Title,UserPrincipalName
+```
+
+The results confirmed that accounts were created in the correct OUs, assigned to the expected department groups, and populated with the intended identity attributes.
+<br>
+
+**`Key Tasks Completed:`**
+- Created a structured CSV for repeatable Active Directory provisioning.
+- Developed a PowerShell script for bulk user creation.
+- Automated OU placement, UPN creation, and account enablement.
+- Assigned department and job-title attributes.
+- Applied temporary-password and first-sign-in password-change requirements.
+- Automated department security-group membership.
+- Added duplicate-account checks and error handling.
+- Generated and provisioned 50 or more test accounts in seconds.
+- Verified OU placement, attributes, and group membership through PowerShell.
+- Stored the CSV and PowerShell script as reusable portfolio artifacts.
+
+**`Overview:`**
+
+This phase demonstrated how PowerShell can scale routine Active Directory administration. The completed workflow transformed structured CSV data into correctly configured domain accounts with automated OU placement and group assignment. The script and verification results provide evidence of practical identity administration, scripting, and process-automation skills.
+<br>
+
+--------
+
+<h2 align="center"><strong>Phase VII: Security Hardening, Auditing & Event Monitoring</strong></h2>
+
+--------
+
+**`Objective:`**  
+Strengthen the LAB.local environment by applying domain-level account controls, enabling advanced auditing, reviewing privileged access, disabling unused accounts, and investigating Windows security events.
+
+**`Key Concepts:`**
+- Domain password and lockout settings should be applied through a domain-linked policy.
+- Advanced Audit Policy records detailed authentication, account-management, policy, and resource-access events.
+- Folder auditing requires both an audit policy and an auditing entry on the protected object.
+- Event Viewer provides evidence for failed logons, account lockouts, account creation, and file-share activity.
+- Privileged group membership should be reviewed regularly.
+- Unused accounts should be disabled and documented.
+- Sysmon can extend host-level visibility into process and network activity.
+
+<b>`Lab Overview:`</b>
+
+This phase hardened the Active Directory environment and added monitoring controls. Password and account-lockout rules were configured at the domain level, and advanced audit settings were applied to domain controllers, servers, and workstations. Security events were generated deliberately and investigated in Event Viewer. Privileged groups were reviewed to confirm that standard users did not have administrative access, and an unused account was disabled and documented. Sysmon was available as an optional extension for deeper endpoint monitoring.
+
+<h3 align="center">Domain Hardening and Security Event Investigation:</h3>
+
+**`Step 1:`**
+
+<p align="center"><strong>Organizing Servers and Workstations into Dedicated OUs:</strong></p>
+
+**`Computer Object Organization:`**
+
+Dedicated **Servers** and **Workstations** OUs were created under the Company OU. FILESERVER was moved into the Servers OU, and CLIENT01 was moved into the Workstations OU. DC01 and DC02 remained in the built-in Domain Controllers OU.
+
+This structure allowed audit and security policies to be linked to the correct computer categories without changing the domain controller OU design.
+<br>
+
+**`Step 2:`**
+
+<p align="center"><strong>Applying the Domain Password and Account Lockout Policy:</strong></p>
+
+<!-- SCREENSHOT VII-01
+Show Get-ADDefaultDomainPasswordPolicy with:
+- minimum length
+- complexity
+- history
+- lockout threshold
+- duration
+- reset counter
+-->
+
+<p align="center">
+  <!-- <img src="PASTE-VII-01-IMAGE-URL-HERE" width="800"/> -->
+</p>
+
+**`Domain Account Policy:`**
+
+A Group Policy Object named **LAB-Domain-Account-Policy** was created and linked to `LAB.local`. The policy included:
+
+| Policy | Lab Setting |
+|---|---|
+| Password complexity | Enabled |
+| Minimum password length | 12 characters |
+| Password history | 24 passwords |
+| Account lockout threshold | 10 invalid attempts |
+| Account lockout duration | 15 minutes |
+| Reset lockout counter | 15 minutes |
+
+The effective domain settings were verified using:
+
+```powershell
+Get-ADDefaultDomainPasswordPolicy
+```
+
+This corrected the earlier design by ensuring that standard domain password and lockout settings were applied at the domain level rather than through department-only GPO links.
+<br>
+
+**`Step 3:`**
+
+<p align="center"><strong>Configuring and Verifying Advanced Audit Policy:</strong></p>
+
+<!-- SCREENSHOT VII-02
+Show relevant auditpol output for:
+- credential validation
+- logon
+- account lockout
+- detailed file share
+- file system
+- policy change
+-->
+
+<p align="center">
+  <!-- <img src="PASTE-VII-02-IMAGE-URL-HERE" width="800"/> -->
+</p>
+
+**`Advanced Auditing Configuration:`**
+
+A GPO named **LAB-Advanced-Audit-Policy** was linked to the Domain Controllers, Servers, and Workstations OUs. Auditing was enabled for:
+
+- Credential validation.
+- User and security-group management.
+- Successful and failed logons.
+- Account lockouts.
+- Detailed file-share access.
+- File-system access.
+- Audit-policy changes.
+
+After Group Policy was refreshed, the effective configuration was verified using:
+
+```cmd
+gpupdate /force
+auditpol /get /category:*
+```
+
+This ensured that relevant security activity could be investigated across the environment.
+<br>
+
+**`Step 4:`**
+
+<p align="center"><strong>Enabling Auditing on Department Shares:</strong></p>
+
+**`Resource-Level Auditing:`**
+
+Auditing entries were added to the HR and IT folder security settings. Failed Read, Write, Create, and Delete attempts were audited for testing, and authorized activity could also be audited for department groups.
+
+The configuration enabled Windows to generate detailed events when users attempted to access or modify protected departmental resources.
+
+The auditing settings page was not included in the main README because the resulting Event Viewer records provide stronger evidence that the control worked.
+<br>
+
+**`Step 5:`**
+
+<p align="center"><strong>Generating and Investigating Security Events:</strong></p>
+
+<!-- SCREENSHOTS VII-03 AND VII-04
+VII-03: Event 4625 and/or 4740 with test user, timestamp, source computer.
+VII-04: Event 4663 or 5145 with user, object/share path, success or failure.
+-->
+
+<p align="center">
+  <!-- <img src="PASTE-VII-03-IMAGE-URL-HERE" width="400"/> -->
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <!-- <img src="PASTE-VII-04-IMAGE-URL-HERE" width="400"/> -->
+</p>
+
+**`Security Event Analysis:`**
+
+Controlled activity was generated to test the monitoring configuration:
+
+- An incorrect password was entered repeatedly for a test account.
+- The account reached the lockout threshold.
+- An HR user attempted to access the IT share.
+- Bulk-created accounts generated account-creation events.
+
+The Security log was filtered for relevant event IDs:
+
+| Event ID | Security Activity |
+|---|---|
+| `4625` | Failed logon |
+| `4740` | User account locked out |
+| `4663` | File-system object access |
+| `5145` | Detailed network-share access check |
+| `4720` | User account created |
+
+The events were reviewed for the affected username, timestamp, source computer, object path, and access result.
+<br>
+
+**`Step 6:`**
+
+<p align="center"><strong>Reviewing Privileged Group Membership:</strong></p>
+
+<!-- SCREENSHOT VII-05
+Show output for Domain Admins, Enterprise Admins, and Schema Admins.
+-->
+
+<p align="center">
+  <!-- <img src="PASTE-VII-05-IMAGE-URL-HERE" width="800"/> -->
+</p>
+
+**`Privileged Access Review:`**
+
+PowerShell was used to review the membership of highly privileged Active Directory groups:
+
+```powershell
+Get-ADGroupMember "Domain Admins"
+Get-ADGroupMember "Enterprise Admins"
+Get-ADGroupMember "Schema Admins"
+```
+
+The review confirmed that HR, Finance, and standard IT accounts were not members of these groups. Administrative access remained limited to approved accounts.
+<br>
+
+**`Step 7:`**
+
+<p align="center"><strong>Disabling and Documenting an Unused Account:</strong></p>
+
+<!-- SCREENSHOT VII-06
+Show labuser50 disabled and the description explaining the action.
+-->
+
+<p align="center">
+  <!-- <img src="PASTE-VII-06-IMAGE-URL-HERE" width="800"/> -->
+</p>
+
+**`Account Lifecycle Control:`**
+
+An unused lab account was disabled and documented:
+
+```powershell
+Disable-ADAccount -Identity labuser50
+
+Set-ADUser `
+    -Identity labuser50 `
+    -Description "Disabled during Phase VII security hardening test"
+```
+
+The account status was then verified:
+
+```powershell
+Search-ADAccount -AccountDisabled |
+    Select-Object Name,SamAccountName
+
+Get-ADUser labuser50 -Properties Enabled,Description |
+    Select-Object Name,Enabled,Description
+```
+
+This demonstrated a basic offboarding and account-lifecycle control.
+<br>
+
+**`Optional Step:`**
+
+<p align="center"><strong>Installing Sysmon for Enhanced Endpoint Visibility:</strong></p>
+
+<!-- OPTIONAL SCREENSHOT VII-07
+Show one meaningful Sysmon Operational event with:
+- event ID
+- process or connection details
+- timestamp
+- computer name
+-->
+
+<p align="center">
+  <!-- <img src="PASTE-VII-07-IMAGE-URL-HERE" width="800"/> -->
+</p>
+
+**`Sysmon Monitoring Extension:`**
+
+Sysmon was optionally installed on CLIENT01 or FILESERVER to record detailed process and network activity:
+
+```cmd
+Sysmon64.exe -accepteula -i C:\Tools\sysmonconfig.xml
+```
+
+Events were reviewed under:
+
+```text
+Applications and Services Logs
+→ Microsoft
+→ Windows
+→ Sysmon
+→ Operational
+```
+
+This optional extension adds endpoint-visibility experience that is relevant to system administration and entry-level security operations.
+<br>
+
+**`Key Tasks Completed:`**
+- Created dedicated Servers and Workstations OUs for policy targeting.
+- Corrected password and lockout policy placement by linking it at the domain level.
+- Enforced password complexity, length, history, and account-lockout controls.
+- Configured advanced auditing across domain controllers, servers, and workstations.
+- Enabled resource-level auditing for department shares.
+- Generated and investigated failed-logon and account-lockout events.
+- Reviewed file-system and detailed share-access events.
+- Identified account-creation events generated by automation.
+- Audited highly privileged Active Directory group membership.
+- Verified that standard department users did not have privileged access.
+- Disabled and documented an unused account.
+- Added optional Sysmon monitoring for deeper host visibility.
+
+**`Overview:`**
+
+This phase strengthened the environment through domain-level account controls, advanced auditing, privileged-access review, and account-lifecycle management. Windows security events were generated and analyzed to verify that the environment could detect failed authentication, account lockouts, and file-share activity. The completed work demonstrates practical security hardening and monitoring skills that support both Windows administration and security operations roles.
+<br>
+
+--------
+
+<h2 align="center"><strong>Phase VIII: Help Desk Troubleshooting & Ticket Documentation</strong></h2>
+
+--------
+
+**`Objective:`**  
+Create controlled IT support incidents, diagnose each issue using evidence, apply the smallest appropriate correction, verify the result, and document the complete workflow in Spiceworks.
+
+**`Key Concepts:`**
+- Troubleshooting should begin with symptoms and evidence rather than assumptions.
+- Commands, logs, account properties, group membership, and policy results help identify root causes.
+- The smallest appropriate correction reduces the risk of creating new problems.
+- Verification should be completed from the affected user’s perspective.
+- Access Denied can be the correct security result when least privilege is working.
+- A professional support ticket should document the issue, findings, root cause, resolution, verification, and status.
+
+<b>`Lab Overview:`</b>
+
+This phase used the completed Active Directory environment to simulate five real-world help desk incidents. Each problem was created deliberately with a test account or client configuration, diagnosed using Windows administration tools, resolved, and documented through a Spiceworks ticket lifecycle. The scenarios covered account lockout, DNS failure, missing Group Policy, missing network drives, and department access control.
+
+<h3 align="center">Evidence-Based Help Desk Troubleshooting:</h3>
+
+**`Troubleshooting Process:`**
+
+The following process was used for every incident:
+
+1. Confirm the affected user, device, and exact symptom.
+2. Gather command output, logs, and configuration evidence.
+3. Identify the root cause before making changes.
+4. Apply the smallest appropriate correction.
+5. Retest from the user’s perspective.
+6. Document the root cause, resolution, verification, and preventive action.
+7. Move the Spiceworks ticket to Resolved or Closed.
+
+--------
+
+<h3 align="center"><strong>Ticket 001: User Cannot Log In</strong></h3>
+
+**`Issue Simulation:`**
+
+A test account was intentionally locked by entering an incorrect password until the configured account-lockout threshold was reached.
+
+**`Diagnosis:`**
+
+The locked account was located using:
+
+```powershell
+Search-ADAccount -LockedOut
+```
+
+Event Viewer was reviewed for:
+
+```text
+Event ID 4625 - Failed logon
+Event ID 4740 - User account locked out
+```
+
+<!-- SCREENSHOT VIII-01A
+Prefer Event ID 4740 showing:
+- username
+- source computer
+- timestamp
+-->
+
+<p align="center">
+  <!-- <img src="PASTE-VIII-01A-IMAGE-URL-HERE" width="800"/> -->
+</p>
+
+**`Root Cause:`**
+
+The account was locked after repeated incorrect password attempts from the client computer.
+
+**`Resolution:`**
+
+The account was unlocked, and the password was reset when required:
+
+```powershell
+Unlock-ADAccount -Identity acarter
+
+Set-ADAccountPassword `
+    -Identity acarter `
+    -Reset `
+    -NewPassword (Read-Host "New password" -AsSecureString)
+
+Set-ADUser `
+    -Identity acarter `
+    -ChangePasswordAtLogon $true
+```
+
+**`Verification:`**
+
+The account no longer appeared in the locked-account results, and the user successfully signed in with the corrected credentials.
+
+<!-- SCREENSHOT VIII-01B
+Show successful sign-in or Search-ADAccount confirming the account is no longer locked.
+-->
+
+<p align="center">
+  <!-- <img src="PASTE-VIII-01B-IMAGE-URL-HERE" width="400"/> -->
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <!-- <img src="PASTE-VIII-TICKET-01-IMAGE-URL-HERE" width="400"/> -->
+</p>
+
+**`Ticket Documentation:`**
+
+The Spiceworks ticket documented the failed-login symptom, Event ID 4740 evidence, locked-account root cause, account-unlock action, successful sign-in verification, and final Resolved or Closed status.
+<br>
+
+--------
+
+<h3 align="center"><strong>Ticket 002: DNS Resolution Failure</strong></h3>
+
+**`Issue Simulation:`**
+
+CLIENT01 was temporarily configured to use the invalid DNS server `192.168.1.250`.
+
+**`Diagnosis:`**
+
+The following commands were used:
+
+```cmd
+ipconfig /all
+ping 192.168.1.10
+ping DC01
+nslookup DC01.LAB.local
+```
+
+The client could reach DC01 by IP address but could not resolve the DC01 hostname or LAB.local domain.
+
+<!-- SCREENSHOT VIII-02A
+Show in one command window:
+- DNS server = 192.168.1.250
+- successful ping to 192.168.1.10
+- failed name-based ping or nslookup
+-->
+
+<p align="center">
+  <!-- <img src="PASTE-VIII-02A-IMAGE-URL-HERE" width="800"/> -->
+</p>
+
+**`Root Cause:`**
+
+Basic network connectivity was working, but CLIENT01 was configured with an invalid DNS server and could not locate Active Directory DNS records.
+
+**`Resolution:`**
+
+The client was returned to DHCP-provided DNS or manually restored to:
+
+```text
+Preferred DNS: 192.168.1.10
+Alternate DNS: 192.168.1.11
+```
+
+The DNS cache and client registration were refreshed:
+
+```cmd
+ipconfig /flushdns
+ipconfig /renew
+ipconfig /registerdns
+```
+
+**`Verification:`**
+
+The following commands completed successfully:
+
+```cmd
+nslookup LAB.local
+nslookup DC01.LAB.local
+nltest /dsgetdc:LAB.local
+```
+
+<!-- SCREENSHOT VIII-02B AND CLOSED TICKET -->
+
+<p align="center">
+  <!-- <img src="PASTE-VIII-02B-IMAGE-URL-HERE" width="400"/> -->
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <!-- <img src="PASTE-VIII-TICKET-02-IMAGE-URL-HERE" width="400"/> -->
+</p>
+
+**`Ticket Documentation:`**
+
+The resolved ticket recorded the incorrect DNS setting, IP-versus-hostname test results, DNS correction, successful domain discovery, and preventive guidance to use the domain-provided DNS configuration.
+<br>
+
+--------
+
+<h3 align="center"><strong>Ticket 003: Group Policy Not Applying</strong></h3>
+
+**`Issue Simulation:`**
+
+A test HR user was moved from the HR OU into the built-in Users container, placing the account outside the scope of the HR-linked Group Policy Object.
+
+**`Diagnosis:`**
+
+The following commands were used to identify the applied policies:
+
+```cmd
+gpresult /r
+gpresult /h C:\gpresult.html
+```
+
+The user’s Active Directory location, GPO links, security filtering, and Group Policy operational logs were also reviewed.
+
+<!-- SCREENSHOT VIII-03A
+Show either:
+- the test user in the wrong Users container, or
+- gpresult /r showing the HR GPO is absent
+-->
+
+<p align="center">
+  <!-- <img src="PASTE-VIII-03A-IMAGE-URL-HERE" width="800"/> -->
+</p>
+
+**`Root Cause:`**
+
+The HR user account was located outside the HR OU, so the department-linked GPO was not within the account’s policy scope.
+
+**`Resolution:`**
+
+The account was moved back into the HR OU. Group Policy was refreshed:
+
+```cmd
+gpupdate /force
+```
+
+The user then signed out and back in to receive the corrected policy state.
+
+**`Verification:`**
+
+`gpresult /r` was run again and confirmed that the HR GPO appeared under **Applied Group Policy Objects**.
+
+<!-- SCREENSHOT VIII-03B AND CLOSED TICKET -->
+
+<p align="center">
+  <!-- <img src="PASTE-VIII-03B-IMAGE-URL-HERE" width="400"/> -->
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <!-- <img src="PASTE-VIII-TICKET-03-IMAGE-URL-HERE" width="400"/> -->
+</p>
+
+**`Ticket Documentation:`**
+
+The closed ticket documented the missing department policy, incorrect OU placement, corrected Active Directory location, policy refresh, and successful `gpresult` verification.
+<br>
+
+--------
+
+<h3 align="center"><strong>Ticket 004: Department Network Drive Missing</strong></h3>
+
+**`Issue Simulation:`**
+
+An HR test user was removed from `GG_HR_Users`. Because the `H:` drive used item-level targeting based on this group, the drive was no longer mapped after the user received a new sign-in token.
+
+**`Diagnosis:`**
+
+The following commands were used:
+
+```cmd
+whoami /groups
+gpresult /r
+net use
+```
+
+The direct UNC path `\\FILESERVER\HR` was also tested to distinguish a group-targeting problem from a general network or file-server outage.
+
+<!-- SCREENSHOT VIII-04A
+Show:
+- GG_HR_Users missing from whoami /groups
+- H: missing from net use
+- direct path result if readable
+-->
+
+<p align="center">
+  <!-- <img src="PASTE-VIII-04A-IMAGE-URL-HERE" width="800"/> -->
+</p>
+
+**`Root Cause:`**
+
+The user was not a member of the security group used by Group Policy item-level targeting, so the HR drive-map preference did not apply.
+
+**`Resolution:`**
+
+The user was returned to the HR global group:
+
+```powershell
+Add-ADGroupMember `
+    -Identity "GG_HR_Users" `
+    -Members "acarter"
+```
+
+The user signed out and back in to receive a new security token.
+
+**`Verification:`**
+
+`whoami /groups` confirmed membership in `GG_HR_Users`, and `net use` or File Explorer confirmed that `H:` was mapped to `\\FILESERVER\HR`.
+
+<!-- SCREENSHOT VIII-04B AND CLOSED TICKET -->
+
+<p align="center">
+  <!-- <img src="PASTE-VIII-04B-IMAGE-URL-HERE" width="400"/> -->
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <!-- <img src="PASTE-VIII-TICKET-04-IMAGE-URL-HERE" width="400"/> -->
+</p>
+
+**`Ticket Documentation:`**
+
+The ticket recorded the missing drive, absent department-group membership, corrected security-group assignment, new sign-in token requirement, and successful mapping verification.
+<br>
+
+--------
+
+<h3 align="center"><strong>Ticket 005: User Cannot Access Another Department’s Folder</strong></h3>
+
+**`Issue Simulation:`**
+
+An HR user attempted to open:
+
+```text
+\\FILESERVER\IT
+```
+
+The user received an Access Denied result.
+
+**`Diagnosis:`**
+
+The user’s security-group token and the IT share permissions were reviewed:
+
+```cmd
+whoami /groups
+```
+
+```powershell
+Get-SmbShareAccess -Name IT
+icacls "D:\Shares\IT"
+```
+
+<!-- SCREENSHOT VIII-05A
+Show:
+- Access Denied
+- HR user/group evidence
+- IT share/NTFS permissions proving HR is not authorized
+-->
+
+<p align="center">
+  <!-- <img src="PASTE-VIII-05A-IMAGE-URL-HERE" width="800"/> -->
+</p>
+
+**`Root Cause:`**
+
+The HR user did not belong to the authorized IT access groups. The Access Denied message was the expected result of the least-privilege design rather than a system failure.
+
+**`Correct Resolution:`**
+
+The user was not added directly to the IT ACL. The incident was handled by confirming whether a valid business approval existed:
+
+- When no approved business requirement existed, access remained denied.
+- When access is approved in a real environment, the user should be placed into the correct authorized security group rather than receiving a direct folder permission.
+
+**`Verification:`**
+
+The IT share remained restricted to authorized IT users, the HR user’s normal HR access continued to work, and no unauthorized permission change was made.
+
+<!-- SCREENSHOT VIII-05B
+Use the final resolved Spiceworks ticket showing:
+- business access review
+- expected least-privilege denial
+- no unauthorized ACL change
+- verification
+- Resolved/Closed status
+-->
+
+<p align="center">
+  <!-- <img src="PASTE-VIII-05B-IMAGE-URL-HERE" width="800"/> -->
+</p>
+
+**`Ticket Documentation:`**
+
+The resolved ticket documented that the reported error was expected security behavior. The ticket showed the permission review, least-privilege root cause, decision not to bypass group-based access control, and confirmation that the file server was working as designed.
+<br>
+
+**`Spiceworks Ticket Workflow:`**
+
+The following ticket statuses were used:
+
+```text
+New
+→ Assigned
+→ In Progress
+→ Pending User
+→ Resolved
+→ Closed
+```
+
+Each ticket included:
+
+- Ticket ID.
+- Requester and affected device.
+- Department and priority.
+- Reported issue and symptoms.
+- Initial assessment.
+- Commands and tools used.
+- Findings and root cause.
+- Resolution.
+- User-perspective verification.
+- Preventive action.
+- Final status.
+
+**`Key Tasks Completed:`**
+- Created five controlled Active Directory and Windows support incidents.
+- Diagnosed a locked account through Active Directory and Event Viewer evidence.
+- Restored user access through account unlock and password-reset procedures.
+- Isolated a DNS failure by comparing IP connectivity with hostname resolution.
+- Corrected client DNS settings and verified domain controller discovery.
+- Diagnosed a missing GPO through OU placement and `gpresult`.
+- Restored a missing drive map through security-group membership.
+- Distinguished an intended least-privilege denial from an actual technical failure.
+- Used `ping`, `ipconfig`, `nslookup`, `nltest`, `gpresult`, `whoami`, `net use`, PowerShell, and Event Viewer.
+- Documented root cause, resolution, and verification in Spiceworks.
+- Moved each completed ticket through a professional support lifecycle.
+- Demonstrated evidence-based troubleshooting instead of changing settings by guesswork.
+
+**`Overview:`**
+
+This phase converted the completed Active Directory environment into a realistic IT support lab. Five controlled incidents were diagnosed through command output, Group Policy results, security logs, account properties, and permissions. Each issue was resolved using the smallest appropriate change and documented through a complete ticket workflow. The results demonstrate practical help desk, Windows administration, Active Directory troubleshooting, access control, and technical documentation experience.
+<br>
+
+--------
+
+<h2 align="center"><strong>Project Completion Summary</strong></h2>
+
+--------
+
+The completed Enterprise Active Directory and Security Operations Lab now demonstrates experience across the following areas:
+
+| Area | Skills Demonstrated |
+|---|---|
+| Active Directory | Domain Controllers, users, OUs, groups, authentication, and account lifecycle management |
+| Windows Server | AD DS, DNS, DHCP, file services, SMB shares, and static server addressing |
+| Access Control | AGDLP, NTFS permissions, share permissions, least privilege, and access testing |
+| Group Policy | Department policies, security settings, drive maps, and policy troubleshooting |
+| PowerShell | CSV-driven user provisioning, group assignment, account verification, and administration |
+| Security Operations | Account lockout monitoring, audit policy, Event Viewer, privileged-access review, and optional Sysmon |
+| Help Desk | Account recovery, DNS troubleshooting, GPO diagnosis, drive mapping, and access-support cases |
+| Documentation | Repeatable procedures, validation commands, screenshots, and closed Spiceworks tickets |
+
+**`Final Project Result:`**
+
+This multi-phase project simulates responsibilities commonly performed by IT Support Specialists, Help Desk Technicians, Windows System Administrators, Active Directory Administrators, and entry-level Security Operations personnel. The lab provides documented evidence of infrastructure deployment, identity management, access control, automation, hardening, monitoring, and structured troubleshooting within a Windows enterprise environment.
