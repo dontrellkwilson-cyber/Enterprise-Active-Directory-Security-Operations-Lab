@@ -500,7 +500,7 @@ These configurations demonstrate centralized control and consistent policy enfor
 
 **`Overview`**
 
-This phase focused on implementing centralized control using Group Policy Objects (GPOs) to manage user and computer behavior across the domain. Department-specific GPOs were created and applied to enforce security settings such as password policies, screen lock timeouts, and system restrictions. The setup was tested by applying policies to client machines and verifying that different departments received the correct configurations.
+This phase focused on implementing centralized control using Group Policy Objects (GPOs) to manage user and computer behavior across the domain. Department-specific GPOs were created and applied to enforce security settings, including password policies, screen lock timeouts, and system restrictions. The setup was tested by applying policies to client machines and verifying that different departments received the correct configurations.
 <br>
 
 --------
@@ -511,3 +511,19 @@ This phase focused on implementing centralized control using Group Policy Object
 
 **`Objective:`**
 Configure file services and access controls to enforce least privilege and secure shared resources.
+
+**`File Server & Permissions Key Concepts:`**
+- A file server centralizes shared company resources so users can access approved folders over the network.
+- Shared folders use UNC paths such as \\fileserver\HR and \\fileserver\IT.
+- Share permissions control access to the folder through the network.
+- NTFS permissions control what users can do with files and folders, including read, modify, write, or full control.
+- Security groups should be assigned permissions instead of individual user accounts.
+- Department-based permissions prevent HR users from accessing IT files and IT users from accessing HR files.
+- Using both share and NTFS permissions helps protect company data and maintain proper access control.
+
+<b>`Lab Overview:`</b>
+
+This lab demonstrates the deployment of a dedicated Windows Server 2022 file server joined to the LAB.local Active Directory domain. It includes a separate data drive, HR and IT SMB shares, AGDLP-based security groups, NTFS and share permissions, access-based enumeration, permission testing, and automatic department drive mapping through Group Policy.
+
+<h3 align="center">Deploying and Securing Department File Shares:</h3>
+
