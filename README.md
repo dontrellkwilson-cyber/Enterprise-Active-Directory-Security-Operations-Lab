@@ -1232,12 +1232,10 @@ The events were reviewed for the affected username, timestamp, source computer, 
 
 <p align="center"><strong>Reviewing Privileged Group Membership:</strong></p>
 
-<!-- SCREENSHOT VII-05
-Show output for Domain Admins, Enterprise Admins, and Schema Admins.
--->
-
 <p align="center">
-  <!-- <img src="PASTE-VII-05-IMAGE-URL-HERE" width="800"/> -->
+  <img src="https://github.com/user-attachments/assets/7e3aef7a-07d5-41e3-9053-8ab756c284d1"
+       alt="Active Directory configuration verification"
+       width="800">
 </p>
 
 **`Privileged Access Review:`**
@@ -1257,12 +1255,10 @@ The review confirmed that HR, Finance, and standard IT accounts were not members
 
 <p align="center"><strong>Disabling and Documenting an Unused Account:</strong></p>
 
-<!-- SCREENSHOT VII-06
-Show labuser50 disabled and the description explaining the action.
--->
-
 <p align="center">
-  <!-- <img src="PASTE-VII-06-IMAGE-URL-HERE" width="800"/> -->
+  <img src="https://github.com/user-attachments/assets/f85ae2c2-5f97-41d2-b975-a1b7d139e36b"
+       alt="Active Directory configuration verification"
+       width="800">
 </p>
 
 **`Account Lifecycle Control:`**
@@ -1290,43 +1286,6 @@ Get-ADUser labuser50 -Properties Enabled,Description |
 This demonstrated a basic offboarding and account-lifecycle control.
 <br>
 
-**`Optional Step:`**
-
-<p align="center"><strong>Installing Sysmon for Enhanced Endpoint Visibility:</strong></p>
-
-<!-- OPTIONAL SCREENSHOT VII-07
-Show one meaningful Sysmon Operational event with:
-- event ID
-- process or connection details
-- timestamp
-- computer name
--->
-
-<p align="center">
-  <!-- <img src="PASTE-VII-07-IMAGE-URL-HERE" width="800"/> -->
-</p>
-
-**`Sysmon Monitoring Extension:`**
-
-Sysmon was optionally installed on CLIENT01 or FILESERVER to record detailed process and network activity:
-
-```cmd
-Sysmon64.exe -accepteula -i C:\Tools\sysmonconfig.xml
-```
-
-Events were reviewed under:
-
-```text
-Applications and Services Logs
-→ Microsoft
-→ Windows
-→ Sysmon
-→ Operational
-```
-
-This optional extension adds endpoint-visibility experience that is relevant to system administration and entry-level security operations.
-<br>
-
 **`Key Tasks Completed:`**
 - Created dedicated Servers and Workstations OUs for policy targeting.
 - Corrected password and lockout policy placement by linking it at the domain level.
@@ -1343,7 +1302,7 @@ This optional extension adds endpoint-visibility experience that is relevant to 
 
 **`Overview:`**
 
-This phase strengthened the environment through domain-level account controls, advanced auditing, privileged-access review, and account-lifecycle management. Windows security events were generated and analyzed to verify that the environment could detect failed authentication, account lockouts, and file-share activity. The completed work demonstrates practical security hardening and monitoring skills that support both Windows administration and security operations roles.
+This phase strengthened the environment through domain-level account controls, advanced auditing, privileged access review, and account lifecycle management. Windows security events were generated and analyzed to verify that the environment could detect failed authentication, account lockouts, and file-share activity. The completed work demonstrates practical security hardening and monitoring skills that support both Windows administration and security operations roles.
 <br>
 
 --------
