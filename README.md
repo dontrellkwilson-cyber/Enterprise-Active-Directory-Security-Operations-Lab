@@ -904,9 +904,10 @@ Successful hostname resolution and domain controller discovery confirmed that th
 **`Step 6:`**
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/822a0d9c-22a0-4f10-b7ac-c37288c9b098"
+  <img src="https://github.com/user-attachments/assets/3da77079-d878-4741-af98-cdf85289f8f7"
        alt="Server configuration verification"
        width="800">
+</p>
 </p>
 
 **`Lease Verification:`**
@@ -1005,16 +1006,10 @@ A reusable PowerShell script named `Create-LabUsers.ps1` was created to:
 
 <p align="center"><strong>Generating and Provisioning Bulk Test Users:</strong></p>
 
-<!-- SCREENSHOT VI-01
-Show the final portion of the script run:
-- multiple successful Created messages
-- more than one department represented
-- no visible password
-- no uncorrected errors
--->
-
 <p align="center">
-  <!-- <img src="PASTE-VI-01-IMAGE-URL-HERE" width="800"/> -->
+  <img src="https://github.com/user-attachments/assets/8f8a9517-d934-426d-813f-76d4fc17f879"
+       alt="Server configuration verification"
+       width="800">
 </p>
 
 **`Bulk Provisioning Execution:`**
@@ -1026,25 +1021,26 @@ Set-ExecutionPolicy RemoteSigned -Scope Process
 C:\LabFiles\Create-LabUsers.ps1
 ```
 
-The script created the accounts and automatically placed each user into the correct department OU and global security group. Representative successful output was captured without exposing the temporary password.
+The script created the accounts and automatically placed each user into the correct department OU and global security group. A representative successful output was captured without exposing the temporary password.
 <br>
 
 **`Step 4:`**
 
 <p align="center"><strong>Verifying User Attributes, OU Placement, and Group Membership:</strong></p>
 
-<!-- SCREENSHOT VI-02
-Show combined PowerShell output proving:
-- correct OU paths
-- department group memberships
-- one user's Department, Title, and UserPrincipalName
--->
-
 <p align="center">
-  <!-- <img src="PASTE-VI-02-IMAGE-URL-HERE" width="800"/> -->
+  <img src="https://github.com/user-attachments/assets/8f8a9517-d934-426d-813f-76d4fc17f879"
+       alt="Server configuration verification"
+       width="800">
 </p>
 
 **`Automation Verification:`**
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/1b6290dc-878e-4992-bb79-b93ae827a0c2"
+       alt="Active Directory user provisioning verification"
+       width="800">
+</p>
 
 The created accounts were validated using Active Directory PowerShell commands:
 
