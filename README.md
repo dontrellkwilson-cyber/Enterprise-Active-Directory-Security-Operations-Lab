@@ -799,15 +799,10 @@ This phase validated the DHCP service that was originally installed during Phase
 
 <p align="center"><strong>Verifying the Authorized DHCP Scope:</strong></p>
 
-<!-- SCREENSHOT V-01
-Show DHCP console:
-- DC01 healthy/authorized
-- active IPv4 scope
-- 192.168.1.100-192.168.1.200 address pool
--->
-
 <p align="center">
-  <!-- <img src="PASTE-V-01-IMAGE-URL-HERE" width="800"/> -->
+  <img src="https://github.com/user-attachments/assets/3c21c4e0-88a2-4b86-9c50-59d85bd1fcc7"
+       alt="DHCP configuration verification"
+       width="800">
 </p>
 
 **`DHCP Scope Verification:`**
@@ -827,15 +822,10 @@ This range separates dynamically assigned client addresses from the static addre
 
 <p align="center"><strong>Validating DHCP Scope Options:</strong></p>
 
-<!-- SCREENSHOT V-02
-Show:
-- Option 006 = 192.168.1.10 and 192.168.1.11
-- Option 015 = LAB.local
-- no incorrect Option 003 Router
--->
-
 <p align="center">
-  <!-- <img src="PASTE-V-02-IMAGE-URL-HERE" width="800"/> -->
+  <img src="https://github.com/user-attachments/assets/8e7d4e30-acec-477a-8158-7d166349dbc6"
+       alt="DHCP scope options verification"
+       width="800">
 </p>
 
 **`Scope Option Configuration:`**
@@ -856,30 +846,20 @@ Option `003 Router` was intentionally left blank because the internal lab networ
 
 **`DHCP and DNS Integration:`**
 
-The DHCP scope DNS settings were configured to support automatic creation and cleanup of client DNS records. Dynamic updates were enabled for A and PTR records, and DNS records were configured for removal when the related lease was deleted.
+The DHCP scope DNS settings were configured to support automatic creation and cleanup of client DNS records. Dynamic updates were enabled for A and PTR records, and DNS records were configured to be removed when the corresponding lease was deleted.
 
 This configuration supports accurate name resolution and reduces stale client records in the DNS zones.
 
-<!-- OPTIONAL SCREENSHOT V-03
-The DNS tab may be shown in the evidence folder, but it can be omitted from the main README.
--->
 <br>
 
 **`Step 4:`**
 
 <p align="center"><strong>Renewing and Verifying the CLIENT01 Lease:</strong></p>
 
-<!-- SCREENSHOT V-04
-Show ipconfig /all with:
-- DHCP Enabled = Yes
-- address between .100 and .200
-- DHCP server = 192.168.1.10
-- DNS = .10 and .11
-- LAB.local suffix
--->
-
 <p align="center">
-  <!-- <img src="PASTE-V-04-IMAGE-URL-HERE" width="800"/> -->
+  <img src="https://github.com/user-attachments/assets/523cb3c3-c34f-48f9-83a9-719a60e5c5d9"
+       alt="DHCP client configuration verification"
+       width="750">
 </p>
 
 **`Client Address Assignment:`**
@@ -899,18 +879,10 @@ The client received an address from the approved DHCP range, identified DC01 as 
 
 <p align="center"><strong>Testing DNS Resolution and Domain Discovery:</strong></p>
 
-<!-- SCREENSHOT V-05
-One command window showing successful:
-nslookup LAB.local
-nslookup DC01.LAB.local
-nslookup FILESERVER.LAB.local
-ping DC01
-ping FILESERVER
-nltest /dsgetdc:LAB.local
--->
-
 <p align="center">
-  <!-- <img src="PASTE-V-05-IMAGE-URL-HERE" width="800"/> -->
+  <img src="https://github.com/user-attachments/assets/3a536d86-0189-4c5c-a5ea-03a67e1ff0c4"
+       alt="Network connectivity and domain discovery verification"
+       width="800">
 </p>
 
 **`Domain Services Validation:`**
@@ -931,17 +903,10 @@ Successful hostname resolution and domain controller discovery confirmed that th
 
 **`Step 6:`**
 
-<p align="center"><strong>Confirming the Active DHCP Lease:</strong></p>
-
-<!-- SCREENSHOT V-06
-Show the DHCP Address Leases pane with:
-- CLIENT01 hostname
-- leased address
-- active lease information
--->
-
 <p align="center">
-  <!-- <img src="PASTE-V-06-IMAGE-URL-HERE" width="800"/> -->
+  <img src="https://github.com/user-attachments/assets/822a0d9c-22a0-4f10-b7ac-c37288c9b098"
+       alt="Server configuration verification"
+       width="800">
 </p>
 
 **`Lease Verification:`**
