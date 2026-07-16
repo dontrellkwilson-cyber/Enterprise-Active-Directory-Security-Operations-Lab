@@ -1117,18 +1117,10 @@ This structure allowed audit and security policies to be linked to the correct c
 
 <p align="center"><strong>Applying the Domain Password and Account Lockout Policy:</strong></p>
 
-<!-- SCREENSHOT VII-01
-Show Get-ADDefaultDomainPasswordPolicy with:
-- minimum length
-- complexity
-- history
-- lockout threshold
-- duration
-- reset counter
--->
-
 <p align="center">
-  <!-- <img src="PASTE-VII-01-IMAGE-URL-HERE" width="800"/> -->
+  <img src="https://github.com/user-attachments/assets/17e50f2f-6729-4b86-8662-aab6feb407fe"
+       alt="Active Directory configuration verification"
+       width="800">
 </p>
 
 **`Domain Account Policy:`**
@@ -1157,18 +1149,10 @@ This corrected the earlier design by ensuring that standard domain password and 
 
 <p align="center"><strong>Configuring and Verifying Advanced Audit Policy:</strong></p>
 
-<!-- SCREENSHOT VII-02
-Show relevant auditpol output for:
-- credential validation
-- logon
-- account lockout
-- detailed file share
-- file system
-- policy change
--->
-
 <p align="center">
-  <!-- <img src="PASTE-VII-02-IMAGE-URL-HERE" width="800"/> -->
+  <img src="https://github.com/user-attachments/assets/5f21763a-29bd-4971-a9d6-be593a3417e8"
+       alt="Active Directory configuration verification"
+       width="800">
 </p>
 
 **`Advanced Auditing Configuration:`**
@@ -1199,7 +1183,7 @@ This ensured that relevant security activity could be investigated across the en
 
 **`Resource-Level Auditing:`**
 
-Auditing entries were added to the HR and IT folder security settings. Failed Read, Write, Create, and Delete attempts were audited for testing, and authorized activity could also be audited for department groups.
+Auditing entries were added to the security settings for the HR and IT folders. Failed Read, Write, Create, and Delete attempts were audited for testing, and authorized activity could also be audited for department groups.
 
 The configuration enabled Windows to generate detailed events when users attempted to access or modify protected departmental resources.
 
@@ -1210,15 +1194,16 @@ The auditing settings page was not included in the main README because the resul
 
 <p align="center"><strong>Generating and Investigating Security Events:</strong></p>
 
-<!-- SCREENSHOTS VII-03 AND VII-04
-VII-03: Event 4625 and/or 4740 with test user, timestamp, source computer.
-VII-04: Event 4663 or 5145 with user, object/share path, success or failure.
--->
-
 <p align="center">
-  <!-- <img src="PASTE-VII-03-IMAGE-URL-HERE" width="400"/> -->
+  <img src="https://github.com/user-attachments/assets/35009965-5982-45db-a8f9-974b4caf4274"
+       alt="Active Directory configuration verification"
+       width="800">
+</p>
   &nbsp;&nbsp;&nbsp;&nbsp;
-  <!-- <img src="PASTE-VII-04-IMAGE-URL-HERE" width="400"/> -->
+  <p align="center">
+  <img src="https://github.com/user-attachments/assets/c4f337cf-75ac-45df-ad8d-2ed40ec3b943"
+       alt="Active Directory configuration verification"
+       width="800">
 </p>
 
 **`Security Event Analysis:`**
