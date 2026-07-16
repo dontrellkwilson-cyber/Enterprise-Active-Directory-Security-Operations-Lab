@@ -665,17 +665,10 @@ This configuration requires users to be authorized by both the SMB share permiss
 
 <p align="center"><strong>Verifying Share and NTFS Permissions:</strong></p>
 
-<!-- SCREENSHOT IV-04
-Insert one PowerShell image showing:
-Get-SmbShare
-Get-SmbShareAccess -Name HR
-Get-SmbShareAccess -Name IT
-icacls "D:\Shares\HR"
-icacls "D:\Shares\IT"
--->
-
 <p align="center">
-  <!-- <img src="PASTE-IV-04-IMAGE-URL-HERE" width="800"/> -->
+  <img src="https://github.com/user-attachments/assets/69de8303-c134-4505-ba84-6b7db68ad8f4"
+       alt="File server permissions configuration"
+       width="850">
 </p>
 
 **`Permission Verification:`**
@@ -695,17 +688,14 @@ The results confirmed that each department share was assigned to the correct dom
 
 **`Step 8:`**
 
-<p align="center"><strong>Testing Department Access Separation:</strong></p>
-
-<!-- SCREENSHOTS IV-05 AND IV-06
-IV-05: HR user can access HR and receives Access Denied for IT.
-IV-06: IT user can access IT and receives Access Denied for HR.
--->
-
 <p align="center">
-  <!-- <img src="PASTE-IV-05-IMAGE-URL-HERE" width="400"/> -->
-  &nbsp;&nbsp;&nbsp;&nbsp;
-  <!-- <img src="PASTE-IV-06-IMAGE-URL-HERE" width="400"/> -->
+  <img src="https://github.com/user-attachments/assets/eeec5f67-8cb8-4731-b395-1fa6d37e6b67"
+       alt="File server configuration"
+       width="750">
+  <br><br>
+  <img src="https://github.com/user-attachments/assets/4cdcde60-e7dd-4377-acd1-90b3af818c7f"
+       alt="File server verification"
+       width="750">
 </p>
 
 **`Access Validation:`**
@@ -734,15 +724,14 @@ These tests confirmed that least privilege and department separation were operat
 
 <p align="center"><strong>Mapping Department Drives through Group Policy:</strong></p>
 
-<!-- SCREENSHOT IV-07
-Show HR receiving H: only and IT receiving I: only.
-Use two images side by side if necessary.
--->
-
 <p align="center">
-  <!-- <img src="PASTE-IV-07-HR-IMAGE-URL-HERE" width="400"/> -->
-  &nbsp;&nbsp;&nbsp;&nbsp;
-  <!-- <img src="PASTE-IV-07-IT-IMAGE-URL-HERE" width="400"/> -->
+  <img src="https://github.com/user-attachments/assets/82bce911-9528-49ff-86a9-c42161833213"
+       alt="HR access verification"
+       width="750">
+  <br><br>
+  <img src="https://github.com/user-attachments/assets/ac522960-2bc5-46b8-be87-08b6b2306aca"
+       alt="IT access verification"
+       width="750">
 </p>
 
 **`Automated Drive Mapping:`**
