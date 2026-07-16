@@ -764,7 +764,7 @@ After signing out and back in, HR users received only the `H:` drive and IT user
 - Removed broad access and enforced least privilege between HR and IT.
 - Enabled access-based enumeration on departmental shares.
 - Verified effective permissions through PowerShell.
-- Tested successful and denied access using separate department accounts.
+- Tested successfully and denied access using separate department accounts.
 - Automated department drive mapping through Group Policy Preferences and item-level targeting.
 
 **`Overview:`**
@@ -786,7 +786,7 @@ Validate the existing DHCP deployment, confirm correct scope and DNS options, an
 - DHCP authorization in Active Directory helps prevent unauthorized Windows DHCP servers from servicing domain clients.
 - Scope options provide DNS servers and the Active Directory DNS suffix.
 - Domain clients should use internal Active Directory DNS servers rather than public DNS servers.
-- DHCP leases and DNS registration should be verified from both the server and client perspective.
+- DHCP leases and DNS registration should be verified from both the server and client perspectives.
 - An isolated lab without a configured router should not receive a false default-gateway value.
 
 <b>`Lab Overview:`</b>
@@ -986,7 +986,7 @@ Automate Active Directory user creation, OU placement, account configuration, an
 
 <b>`Lab Overview:`</b>
 
-This phase introduced PowerShell automation to provision Active Directory users at scale. A CSV file was created with identity and department information, and a PowerShell script was developed to create enabled accounts, assign the correct Organizational Unit, configure account attributes, require a password change, and add users to their department security group. The script was tested with a bulk set of lab accounts and verified through Active Directory PowerShell commands.
+This phase introduced PowerShell automation to provision Active Directory users at scale. A CSV file was created containing identity and department information, and a PowerShell script was developed to enable accounts, assign the correct Organizational Unit, configure account attributes, require a password change, and add users to their department security group. The script was tested with a bulk set of lab accounts and verified through Active Directory PowerShell commands.
 
 <h3 align="center">CSV-Driven User Creation and Group Assignment:</h3>
 
