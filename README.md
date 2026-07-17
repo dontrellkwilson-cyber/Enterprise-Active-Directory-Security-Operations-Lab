@@ -5,7 +5,7 @@
 Designed and implemented a multi-phase enterprise Active Directory lab simulating real-world IT operations, including system administration, network services, security hardening, automation, and troubleshooting.
 
 This project demonstrates:
-- Deployment of redundant Domain Controllers (DC01 & DC02) for high availability.
+- Deployment of two domain controllers (DC01 and DC02) to demonstrate directory-service redundancy and replication.
 - Centralized identity and access management using Active Directory.
 - Network services configuration (DNS, DHCP) for domain functionality.
 - Organizational Unit (OU) design and user provisioning.
@@ -20,14 +20,14 @@ This lab simulates responsibilities across System Administration, IT Support, an
 <h2>Description:</h2>
 This project simulates a real-world enterprise IT environment using a Windows Server–based Active Directory infrastructure. The lab was designed to demonstrate core system administration skills, including identity and access management, network services configuration, automation, security hardening, and troubleshooting.
 
-<h2 align="center">Languages and Technologies Used:</h2>
+<h2 align="center">Technologies and Tools Used:</h2>
 
 <div align="center">
  
 <b>`Directory and Identity Services:`</b>
 
 Active Directory Domain Services (**`AD DS`**).<br>
-Active Directory Users & Computers (**`ADUC`**).<br>
+Active Directory Users and Computers (**`ADUC`**).<br>
 Group Policy Management.<br>
 
 <b>`Networking Services:`</b>
@@ -36,7 +36,7 @@ DNS.<br>
 DHCP.<br>
 TCP/IP IPv4 Addressing.<br>
 Static IP Configuration.<br>
-Host-Only Networking.<br>
+VirtualBox Internal Networking.<br>
 
 <b>`File Services & Access Control:`</b>
 
@@ -70,9 +70,22 @@ PowerShell.<br>
 - Windows 10 Client (**`21H2`**).
 - Windows Server 2022.
 
+
+<h2>Table of Contents</h2>
+
+- [Phase I: Environment Setup](#phase-i)
+- [Phase II: Organizational Unit Design & User Provisioning](#phase-ii)
+- [Phase III: Group Policy Management](#phase-iii)
+- [Phase IV: File Server & Permissions](#phase-iv)
+- [Phase V: DHCP Validation & Automated Client Addressing](#phase-v)
+- [Phase VI: PowerShell-Based Active Directory User Provisioning](#phase-vi)
+- [Phase VII: Security Hardening, Auditing & Event Monitoring](#phase-vii)
+- [Project Completion Summary](#project-completion)
+
 <h1 align="left">Lab Walk-Through:</h1>
 
 --------
+<a id="phase-i"></a>
 <h2 align="center"><strong>Phase I: Environment Setup</strong></h2>
 
 --------
@@ -87,11 +100,11 @@ PowerShell.<br>
 
 <b>`Lab Overview:`</b>
 
-This lab focuses on building a functional Active Directory environment by configuring two Domain Controllers (DC01 and DC02) within an isolated network. Core services, including AD DS, DNS, and DHCP, were installed and configured, with DC01 acting as the primary controller and DC02 providing redundancy through replication. The setup was validated by verifying DNS resolution, Active Directory functionality, and successful replication between domain controllers.
+This lab focuses on building a functional Active Directory environment by configuring two domain controllers (DC01 and DC02) within an isolated network. Core services, including AD DS, DNS, and DHCP, were installed and configured. DC01 was deployed as the first domain controller and network-services host, while DC02 was promoted as an additional domain controller to provide directory-service redundancy and replication. The setup was validated by verifying DNS resolution, Active Directory functionality, and successful replication between the domain controllers.
 
 **`Design Decisions:`**
-- Implemented two Domain Controllers to simulate redundancy and high availability in enterprise environments.
-- Separated external (NAT) and internal network traffic to reduce attack surface and reflect real-world network segmentation.
+- Implemented two domain controllers to demonstrate directory-service redundancy and replication in an enterprise-style environment.
+- Separated temporary NAT-based update access from internal domain traffic to maintain an isolated lab network.
 - Used static IP addressing to ensure consistent communication for critical infrastructure services.
 - Configured DNS and replication to maintain directory consistency across domain controllers.
 
@@ -111,9 +124,9 @@ This lab focuses on building a functional Active Directory environment by config
 
 **`Network Services Configuration:`**
 
-DC01 was configured with dual network adapters to separate external connectivity (NAT) from internal domain traffic, improving security and simulating enterprise network segmentation. DC02 operates solely on the internal network to reduce exposure and support secure authentication and replication.
+DC01 was configured with separate NAT and internal adapters so the isolated domain network could remain separate from temporary update access. DC02 operated only on the internal network to support authentication and replication without direct NAT connectivity.
 
-This setup isolates internal domain traffic while allowing DC01 limited external access for maintenance and updates.
+This design was used for lab functionality. In a production environment, routing and external connectivity would normally be handled by dedicated network infrastructure rather than directly by a domain controller.
 <br>
 
 **`Step 2:`**
@@ -128,7 +141,7 @@ This setup isolates internal domain traffic while allowing DC01 limited external
 
 In this step, static IP addresses were configured on both domain controllers (DC01 and DC02) to ensure consistent and reliable network communication within the lab environment. 
 - DC01 was assigned **192.168.1.10** and DC02 was assigned **192.168.1.11**, both using a subnet mask of **255.255.255.0**. 
-- **No default gateway** was configured since the internal  network is isolated. 
+- **No default gateway** was configured since the internal network is isolated. 
 - DNS settings were configured to support Active Directory, with DC02 pointing to DC01 as its primary DNS server.
 
 Using static IPs is critical in a domain environment to prevent IP changes that could disrupt services like DNS and authentication.
@@ -158,7 +171,7 @@ Both servers were renamed to DC01 and DC02 to align with standard enterprise nam
 
 **`Active Directory and Core Services Installation:`**
 
-Core infrastructure roles were installed to support the Active Directory environment. DC01 was configured with Active Directory Domain Services (AD DS), DNS, and DHCP to function as the primary domain controller and network services provider. DC02 was configured with AD DS to operate as a secondary domain controller, supporting redundancy and replication.
+Core infrastructure roles were installed to support the Active Directory environment. DC01 was configured with Active Directory Domain Services (AD DS), DNS, and DHCP as the first domain controller and network-services provider. DC02 was configured with AD DS and promoted as an additional domain controller to support directory-service redundancy and replication.
 <br>
 
 **`Step 5:`**
@@ -176,9 +189,9 @@ Core infrastructure roles were installed to support the Active Directory environ
 
 **`Domain Controller Promotion:`**
 
-DC01 was promoted to a domain controller by creating a new Active Directory forest (LAB.local), establishing the foundation of the domain environment. DC02 was then joined to the domain and promoted as an additional domain controller to provide redundancy, load balancing, and directory replication.
+DC01 was promoted as the first domain controller by creating the new `LAB.local` Active Directory forest. DC02 was then joined to the domain and promoted as an additional domain controller to provide directory-service redundancy and Active Directory replication.
 
-This configuration ensures high availability and fault tolerance within the Active Directory infrastructure.
+This configuration demonstrates replication and service redundancy within the virtual lab. Because both virtual machines run on the same physical host and virtual network, it should not be treated as production-level high availability or fault tolerance.
 <br>
 
 **`Step 6:`**
@@ -229,7 +242,7 @@ This setup enables centralized network management and reduces manual configurati
 <br>
 
 **`Step 8:`**
-<p align="center"><strong>Disable DNS on NAT NIC:</strong></p>
+<p align="center"><strong>Disable DNS Registration on the NAT Adapter:</strong></p>
 <p align="center">
   <img src="https://github.com/user-attachments/assets/5de4f243-2265-4398-8c06-d2f36969db16" width="400"/>
 </p>
@@ -246,7 +259,7 @@ This configuration ensures consistent name resolution and reliable communication
 - Preferred DNS: **192.168.1.10**
 - Alternate DNS: **192.168.1.11**
 
-Now, both DCs can resolve each other.
+Now, both domain controllers can resolve each other.
 <br>
 
 **`Step 9:`**
@@ -265,25 +278,26 @@ Successful testing verified that the domain environment was fully operational an
 <br>
 
 **`Key Tasks Completed:`**
-- Engineered a dual Domain Controller architecture (DC01/DC02) to simulate high availability and fault tolerance in an enterprise environment.
-- Designed segmented network architecture using NAT (external) and isolated internal networks to reduce attack surface and mirror real-world infrastructure.
+- Built a two-domain-controller architecture (DC01 and DC02) to demonstrate Active Directory replication and directory-service redundancy.
+- Separated NAT-based update access from the isolated internal domain network for lab management and testing.
 - Implemented static IP addressing for critical systems to ensure consistent DNS resolution and reliable domain communication.
 - Deployed Active Directory Domain Services (AD DS), DNS, and DHCP to establish core identity and network services.
-- Built a new Active Directory forest (**`LAB.local`**) and promoted DC01 as the primary Domain Controller.
-- Integrated and promoted DC02 as a secondary Domain Controller to support redundancy and directory replication.
+- Built a new Active Directory forest (**`LAB.local`**) and promoted DC01 as the first domain controller.
+- Integrated and promoted DC02 as an additional domain controller to support redundancy and directory replication.
 - Configured DNS for multi-DC support, ensuring accurate name resolution and service reliability.
 - Validated AD health and replication using tools such as **`repadmin`** and Active Directory Sites and Services.
 - Configured and authorized DHCP with a defined scope (**`192.168.1.100–200`**) to automate client IP assignment.
 - Optimized network configuration by disabling DNS registration on external interfaces to prevent conflicts.
-- Performed system validation using **`ipconfig`** and **`nslookup`** to confirm.
+- Performed system validation using **`ipconfig`**, **`nslookup`**, and **`repadmin`** to confirm network configuration, DNS resolution, and Active Directory replication.
 
 **`Overview:`**
 
-This phase focused on building the core Active Directory infrastructure by configuring two domain controllers (DC01 and DC02) within an isolated network. Key services such as AD DS, DNS, and DHCP were installed, with DC01 acting as the primary controller and DC02 providing redundancy through replication. The setup was validated through DNS resolution, replication checks, and successful domain functionality testing.
+This phase focused on building the core Active Directory infrastructure by configuring two domain controllers (DC01 and DC02) within an isolated network. Key services such as AD DS, DNS, and DHCP were installed, with DC01 serving as the first domain controller and DC02 serving as an additional domain controller for replication and directory-service redundancy. The setup was validated through DNS resolution, replication checks, and successful domain functionality testing.
 <br>
 
 --------
 
+<a id="phase-ii"></a>
 <h2 align="center"><strong>Phase II: Organizational Unit (OU) Design & User Provisioning</strong></h2>
 
 --------
@@ -365,13 +379,14 @@ Successful login using domain credentials confirmed proper authentication and in
 - Configured client DNS settings to ensure proper domain resolution and authentication.
 - Validated successful domain authentication through user login testing across multiple accounts.
 
-**`Overview`**
+**`Overview:`**
 
 This phase involved designing a structured Organizational Unit (OU) hierarchy to reflect a real-world enterprise environment and provisioning users within each department. Departments such as HR, IT, and Finance were organized into OUs to support scalable management and policy application. The configuration was validated by joining a Windows client to the domain and confirming successful user authentication.
 <br>
 
 --------
 
+<a id="phase-iii"></a>
 <h2 align="center"><strong>Phase III: Group Policy Management</strong></h2>
 
 --------
@@ -389,7 +404,7 @@ Implement centralized control using Group Policy Objects to enforce security set
 
 <b>`Lab Overview:`</b>
 
-This phase focuses on implementing centralized management through Group Policy Objects (GPOs) to control user and system behavior across the domain. Department-specific GPOs were created and applied to Organizational Units to enforce policies such as password requirements, screen lock settings, and system restrictions. The configuration was validated by applying policies to client machines and confirming different behaviors across departments using tools like gpupdate /force and gpresult /r.
+This phase focuses on implementing centralized management through Group Policy Objects (GPOs) to control user and system behavior across the domain. Department-specific GPOs were created and applied to Organizational Units to enforce user-environment settings such as screen-lock behavior and restrictions on system tools. Password and account-lockout settings were later placed in a domain-linked policy during Phase VII so they would apply correctly to domain accounts. The configuration was validated on client machines using tools such as `gpupdate /force` and `gpresult /r`.
 
 <h3 align="center">Creating and Managing Group Policy Objects (GPOs):</h3>
 
@@ -440,7 +455,7 @@ Each GPO was linked directly to its respective OU to ensure policies were applie
 
 **`Group Policy Configuration:`**
 
-Department-specific policies were configured within each GPO to enforce security and system behavior standards. Settings included password policies, screen lock timeouts, and restrictions on system tools such as the Control Panel.
+Department-specific policies were configured within each GPO to enforce user and system behavior standards. Settings included screen-lock timeouts and restrictions on system tools such as the Control Panel. Domain password and account-lockout settings were addressed separately through the domain-linked policy implemented in Phase VII.
 
 These configurations demonstrate centralized control and consistent policy enforcement across the domain.
 <br>
@@ -492,19 +507,20 @@ These configurations demonstrate centralized control and consistent policy enfor
 **`Key Tasks Completed:`**
 - Implemented centralized configuration management using Group Policy Objects (GPOs) across departmental OUs.
 - Designed and deployed department-specific GPOs to enforce targeted security and system configurations.
-- Applied security controls, including password policies, account restrictions, and system access limitations.
+- Applied department-specific user restrictions and system-access limitations through OU-linked GPOs.
 - Enforced user environment restrictions (e.g., Control Panel access, system settings) to standardize endpoint behavior.
 - Linked GPOs to Organizational Units to ensure precise and scalable policy application.
 - Validated policy deployment using **`gpupdate /force`** and **`gpresult /r`** to confirm correct inheritance and application.
 - Tested and confirmed differentiated policy behavior across departments in a client environment.
 
-**`Overview`**
+**`Overview:`**
 
-This phase focused on implementing centralized control using Group Policy Objects (GPOs) to manage user and computer behavior across the domain. Department-specific GPOs were created and applied to enforce security settings, including password policies, screen lock timeouts, and system restrictions. The setup was tested by applying policies to client machines and verifying that different departments received the correct configurations.
+This phase focused on implementing centralized control using Group Policy Objects (GPOs) to manage user and computer behavior across the domain. Department-specific GPOs were created and applied to enforce screen-lock settings and system restrictions. The setup was tested on client machines to verify that each department received the correct configuration, while the effective domain password and account-lockout policy was implemented later in Phase VII.
 <br>
 
 --------
 
+<a id="phase-iv"></a>
 <h2 align="center"><strong>Phase IV: File Server & Permissions</strong></h2>
 
 --------
@@ -533,7 +549,7 @@ This phase expanded the LAB.local environment by deploying a dedicated Windows S
 <p align="center"><strong>Deploying and Validating FILESERVER:</strong></p>
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/569654e1-3f09-4234-a6ce-4f2b3868624f" alt="Security Groups configuration" width="700">
+  <img src="https://github.com/user-attachments/assets/569654e1-3f09-4234-a6ce-4f2b3868624f" alt="FILESERVER network and domain connectivity validation" width="700">
 </p>
 
 **`FILESERVER Domain Integration:`**
@@ -667,7 +683,7 @@ This configuration requires users to be authorized by both the SMB share permiss
 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/69de8303-c134-4505-ba84-6b7db68ad8f4"
-       alt="File server permissions configuration"
+       alt="PowerShell verification of SMB share and NTFS permissions"
        width="850">
 </p>
 
@@ -690,11 +706,11 @@ The results confirmed that each department share was assigned to the correct dom
 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/eeec5f67-8cb8-4731-b395-1fa6d37e6b67"
-       alt="File server configuration"
+       alt="HR user access to the authorized departmental share"
        width="750">
   <br><br>
   <img src="https://github.com/user-attachments/assets/4cdcde60-e7dd-4377-acd1-90b3af818c7f"
-       alt="File server verification"
+       alt="HR user denied access to the unauthorized IT share"
        width="750">
 </p>
 
@@ -726,11 +742,11 @@ These tests confirmed that least privilege and department separation were operat
 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/82bce911-9528-49ff-86a9-c42161833213"
-       alt="HR access verification"
+       alt="HR shared drive mapping verification"
        width="750">
   <br><br>
   <img src="https://github.com/user-attachments/assets/ac522960-2bc5-46b8-be87-08b6b2306aca"
-       alt="IT access verification"
+       alt="IT shared drive mapping verification"
        width="750">
 </p>
 
@@ -774,6 +790,7 @@ This phase implemented a dedicated enterprise file server and secured department
 
 --------
 
+<a id="phase-v"></a>
 <h2 align="center"><strong>Phase V: DHCP Validation & Automated Client Addressing</strong></h2>
 
 --------
@@ -801,7 +818,7 @@ This phase validated the DHCP service that was originally installed during Phase
 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/3c21c4e0-88a2-4b86-9c50-59d85bd1fcc7"
-       alt="DHCP configuration verification"
+       alt="Authorized DHCP scope and address pool verification"
        width="800">
 </p>
 
@@ -824,7 +841,7 @@ This range separates dynamically assigned client addresses from the static addre
 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/8e7d4e30-acec-477a-8158-7d166349dbc6"
-       alt="DHCP scope options verification"
+       alt="DHCP DNS server and domain-name scope options"
        width="800">
 </p>
 
@@ -858,7 +875,7 @@ This configuration supports accurate name resolution and reduces stale client re
 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/523cb3c3-c34f-48f9-83a9-719a60e5c5d9"
-       alt="DHCP client configuration verification"
+       alt="CLIENT01 automatic IPv4 and DNS configuration"
        width="750">
 </p>
 
@@ -881,7 +898,7 @@ The client received an address from the approved DHCP range, identified DC01 as 
 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/3a536d86-0189-4c5c-a5ea-03a67e1ff0c4"
-       alt="Network connectivity and domain discovery verification"
+       alt="CLIENT01 DNS resolution and domain controller discovery tests"
        width="800">
 </p>
 
@@ -905,9 +922,8 @@ Successful hostname resolution and domain controller discovery confirmed that th
 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/3da77079-d878-4741-af98-cdf85289f8f7"
-       alt="Server configuration verification"
+       alt="DHCP address lease verification for CLIENT01"
        width="800">
-</p>
 </p>
 
 **`Lease Verification:`**
@@ -935,6 +951,7 @@ This phase validated centralized client address assignment without duplicating t
 
 --------
 
+<a id="phase-vi"></a>
 <h2 align="center"><strong>Phase VI: PowerShell-Based Active Directory User Provisioning</strong></h2>
 
 --------
@@ -1008,7 +1025,7 @@ A reusable PowerShell script named `Create-LabUsers.ps1` was created to:
 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/8f8a9517-d934-426d-813f-76d4fc17f879"
-       alt="Server configuration verification"
+       alt="PowerShell bulk Active Directory user provisioning output"
        width="800">
 </p>
 
@@ -1028,17 +1045,11 @@ The script created the accounts and automatically placed each user into the corr
 
 <p align="center"><strong>Verifying User Attributes, OU Placement, and Group Membership:</strong></p>
 
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/8f8a9517-d934-426d-813f-76d4fc17f879"
-       alt="Server configuration verification"
-       width="800">
-</p>
-
 **`Automation Verification:`**
 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/1b6290dc-878e-4992-bb79-b93ae827a0c2"
-       alt="Active Directory user provisioning verification"
+       alt="PowerShell verification of user OU placement attributes and group membership"
        width="800">
 </p>
 
@@ -1069,7 +1080,7 @@ The results confirmed that accounts were created in the correct OUs, assigned to
 - Applied temporary-password and first-sign-in password-change requirements.
 - Automated department security-group membership.
 - Added duplicate-account checks and error handling.
-- Generated and provisioned 50 or more test accounts in seconds.
+- Generated and provisioned 50 or more structured test accounts through PowerShell.
 - Verified OU placement, attributes, and group membership through PowerShell.
 - Stored the CSV and PowerShell script as reusable portfolio artifacts.
 
@@ -1080,6 +1091,7 @@ This phase demonstrated how PowerShell can scale routine Active Directory admini
 
 --------
 
+<a id="phase-vii"></a>
 <h2 align="center"><strong>Phase VII: Security Hardening, Auditing & Event Monitoring</strong></h2>
 
 --------
@@ -1119,7 +1131,7 @@ This structure allowed audit and security policies to be linked to the correct c
 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/17e50f2f-6729-4b86-8662-aab6feb407fe"
-       alt="Active Directory configuration verification"
+       alt="PowerShell verification of the effective domain password and account lockout policy"
        width="800">
 </p>
 
@@ -1151,7 +1163,7 @@ This corrected the earlier design by ensuring that standard domain password and 
 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/5f21763a-29bd-4971-a9d6-be593a3417e8"
-       alt="Active Directory configuration verification"
+       alt="Auditpol output verifying advanced audit policy settings"
        width="800">
 </p>
 
@@ -1196,13 +1208,13 @@ The auditing settings page was not included in the main README because the resul
 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/35009965-5982-45db-a8f9-974b4caf4274"
-       alt="Active Directory configuration verification"
+       alt="Windows Security log filtered for generated authentication and account events"
        width="800">
 </p>
   &nbsp;&nbsp;&nbsp;&nbsp;
   <p align="center">
   <img src="https://github.com/user-attachments/assets/c4f337cf-75ac-45df-ad8d-2ed40ec3b943"
-       alt="Active Directory configuration verification"
+       alt="Windows Security event details used during the investigation"
        width="800">
 </p>
 
@@ -1234,7 +1246,7 @@ The events were reviewed for the affected username, timestamp, source computer, 
 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/7e3aef7a-07d5-41e3-9053-8ab756c284d1"
-       alt="Active Directory configuration verification"
+       alt="PowerShell privileged Active Directory group membership review"
        width="800">
 </p>
 
@@ -1257,7 +1269,7 @@ The review confirmed that HR, Finance, and standard IT accounts were not members
 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/f85ae2c2-5f97-41d2-b975-a1b7d139e36b"
-       alt="Active Directory configuration verification"
+       alt="PowerShell verification of the disabled Active Directory account"
        width="800">
 </p>
 
@@ -1283,7 +1295,7 @@ Get-ADUser labuser50 -Properties Enabled,Description |
     Select-Object Name,Enabled,Description
 ```
 
-This demonstrated a basic offboarding and account-lifecycle control.
+This demonstrated basic offboarding and account-lifecycle control.
 <br>
 
 **`Key Tasks Completed:`**
@@ -1293,12 +1305,12 @@ This demonstrated a basic offboarding and account-lifecycle control.
 - Configured advanced auditing across domain controllers, servers, and workstations.
 - Enabled resource-level auditing for department shares.
 - Generated and investigated failed-logon and account-lockout events.
-- Reviewed file-system and detailed share-access events.
+- Reviewed file system and detailed share-access events.
 - Identified account-creation events generated by automation.
 - Audited highly privileged Active Directory group membership.
 - Verified that standard department users did not have privileged access.
 - Disabled and documented an unused account.
-- Added optional Sysmon monitoring for deeper host visibility.
+- Identified Sysmon as an optional extension for deeper endpoint monitoring.
 
 **`Overview:`**
 
@@ -1307,432 +1319,8 @@ This phase strengthened the environment through domain-level account controls, a
 
 --------
 
-<h2 align="center"><strong>Phase VIII: Help Desk Troubleshooting & Ticket Documentation</strong></h2>
 
---------
-
-**`Objective:`**  
-Create controlled IT support incidents, diagnose each issue using evidence, apply the smallest appropriate correction, verify the result, and document the complete workflow in Spiceworks.
-
-**`Key Concepts:`**
-- Troubleshooting should begin with symptoms and evidence rather than assumptions.
-- Commands, logs, account properties, group membership, and policy results help identify root causes.
-- The smallest appropriate correction reduces the risk of creating new problems.
-- Verification should be completed from the affected user’s perspective.
-- Access Denied can be the correct security result when least privilege is working.
-- A professional support ticket should document the issue, findings, root cause, resolution, verification, and status.
-
-<b>`Lab Overview:`</b>
-
-This phase used the completed Active Directory environment to simulate five real-world help desk incidents. Each problem was created deliberately with a test account or client configuration, diagnosed using Windows administration tools, resolved, and documented through a Spiceworks ticket lifecycle. The scenarios covered account lockout, DNS failure, missing Group Policy, missing network drives, and department access control.
-
-<h3 align="center">Evidence-Based Help Desk Troubleshooting:</h3>
-
-**`Troubleshooting Process:`**
-
-The following process was used for every incident:
-
-1. Confirm the affected user, device, and exact symptom.
-2. Gather command output, logs, and configuration evidence.
-3. Identify the root cause before making changes.
-4. Apply the smallest appropriate correction.
-5. Retest from the user’s perspective.
-6. Document the root cause, resolution, verification, and preventive action.
-7. Move the Spiceworks ticket to Resolved or Closed.
-
---------
-
-<h3 align="center"><strong>Ticket 001: User Cannot Log In</strong></h3>
-
-**`Issue Simulation:`**
-
-A test account was intentionally locked by entering an incorrect password until the configured account-lockout threshold was reached.
-
-**`Diagnosis:`**
-
-The locked account was located using:
-
-```powershell
-Search-ADAccount -LockedOut
-```
-
-Event Viewer was reviewed for:
-
-```text
-Event ID 4625 - Failed logon
-Event ID 4740 - User account locked out
-```
-
-<!-- SCREENSHOT VIII-01A
-Prefer Event ID 4740 showing:
-- username
-- source computer
-- timestamp
--->
-
-<p align="center">
-  <!-- <img src="PASTE-VIII-01A-IMAGE-URL-HERE" width="800"/> -->
-</p>
-
-**`Root Cause:`**
-
-The account was locked after repeated incorrect password attempts from the client computer.
-
-**`Resolution:`**
-
-The account was unlocked, and the password was reset when required:
-
-```powershell
-Unlock-ADAccount -Identity acarter
-
-Set-ADAccountPassword `
-    -Identity acarter `
-    -Reset `
-    -NewPassword (Read-Host "New password" -AsSecureString)
-
-Set-ADUser `
-    -Identity acarter `
-    -ChangePasswordAtLogon $true
-```
-
-**`Verification:`**
-
-The account no longer appeared in the locked-account results, and the user successfully signed in with the corrected credentials.
-
-<!-- SCREENSHOT VIII-01B
-Show successful sign-in or Search-ADAccount confirming the account is no longer locked.
--->
-
-<p align="center">
-  <!-- <img src="PASTE-VIII-01B-IMAGE-URL-HERE" width="400"/> -->
-  &nbsp;&nbsp;&nbsp;&nbsp;
-  <!-- <img src="PASTE-VIII-TICKET-01-IMAGE-URL-HERE" width="400"/> -->
-</p>
-
-**`Ticket Documentation:`**
-
-The Spiceworks ticket documented the failed-login symptom, Event ID 4740 evidence, locked-account root cause, account-unlock action, successful sign-in verification, and final Resolved or Closed status.
-<br>
-
---------
-
-<h3 align="center"><strong>Ticket 002: DNS Resolution Failure</strong></h3>
-
-**`Issue Simulation:`**
-
-CLIENT01 was temporarily configured to use the invalid DNS server `192.168.1.250`.
-
-**`Diagnosis:`**
-
-The following commands were used:
-
-```cmd
-ipconfig /all
-ping 192.168.1.10
-ping DC01
-nslookup DC01.LAB.local
-```
-
-The client could reach DC01 by IP address but could not resolve the DC01 hostname or LAB.local domain.
-
-<!-- SCREENSHOT VIII-02A
-Show in one command window:
-- DNS server = 192.168.1.250
-- successful ping to 192.168.1.10
-- failed name-based ping or nslookup
--->
-
-<p align="center">
-  <!-- <img src="PASTE-VIII-02A-IMAGE-URL-HERE" width="800"/> -->
-</p>
-
-**`Root Cause:`**
-
-Basic network connectivity was working, but CLIENT01 was configured with an invalid DNS server and could not locate Active Directory DNS records.
-
-**`Resolution:`**
-
-The client was returned to DHCP-provided DNS or manually restored to:
-
-```text
-Preferred DNS: 192.168.1.10
-Alternate DNS: 192.168.1.11
-```
-
-The DNS cache and client registration were refreshed:
-
-```cmd
-ipconfig /flushdns
-ipconfig /renew
-ipconfig /registerdns
-```
-
-**`Verification:`**
-
-The following commands completed successfully:
-
-```cmd
-nslookup LAB.local
-nslookup DC01.LAB.local
-nltest /dsgetdc:LAB.local
-```
-
-<!-- SCREENSHOT VIII-02B AND CLOSED TICKET -->
-
-<p align="center">
-  <!-- <img src="PASTE-VIII-02B-IMAGE-URL-HERE" width="400"/> -->
-  &nbsp;&nbsp;&nbsp;&nbsp;
-  <!-- <img src="PASTE-VIII-TICKET-02-IMAGE-URL-HERE" width="400"/> -->
-</p>
-
-**`Ticket Documentation:`**
-
-The resolved ticket recorded the incorrect DNS setting, IP-versus-hostname test results, DNS correction, successful domain discovery, and preventive guidance to use the domain-provided DNS configuration.
-<br>
-
---------
-
-<h3 align="center"><strong>Ticket 003: Group Policy Not Applying</strong></h3>
-
-**`Issue Simulation:`**
-
-A test HR user was moved from the HR OU into the built-in Users container, placing the account outside the scope of the HR-linked Group Policy Object.
-
-**`Diagnosis:`**
-
-The following commands were used to identify the applied policies:
-
-```cmd
-gpresult /r
-gpresult /h C:\gpresult.html
-```
-
-The user’s Active Directory location, GPO links, security filtering, and Group Policy operational logs were also reviewed.
-
-<!-- SCREENSHOT VIII-03A
-Show either:
-- the test user in the wrong Users container, or
-- gpresult /r showing the HR GPO is absent
--->
-
-<p align="center">
-  <!-- <img src="PASTE-VIII-03A-IMAGE-URL-HERE" width="800"/> -->
-</p>
-
-**`Root Cause:`**
-
-The HR user account was located outside the HR OU, so the department-linked GPO was not within the account’s policy scope.
-
-**`Resolution:`**
-
-The account was moved back into the HR OU. Group Policy was refreshed:
-
-```cmd
-gpupdate /force
-```
-
-The user then signed out and back in to receive the corrected policy state.
-
-**`Verification:`**
-
-`gpresult /r` was run again and confirmed that the HR GPO appeared under **Applied Group Policy Objects**.
-
-<!-- SCREENSHOT VIII-03B AND CLOSED TICKET -->
-
-<p align="center">
-  <!-- <img src="PASTE-VIII-03B-IMAGE-URL-HERE" width="400"/> -->
-  &nbsp;&nbsp;&nbsp;&nbsp;
-  <!-- <img src="PASTE-VIII-TICKET-03-IMAGE-URL-HERE" width="400"/> -->
-</p>
-
-**`Ticket Documentation:`**
-
-The closed ticket documented the missing department policy, incorrect OU placement, corrected Active Directory location, policy refresh, and successful `gpresult` verification.
-<br>
-
---------
-
-<h3 align="center"><strong>Ticket 004: Department Network Drive Missing</strong></h3>
-
-**`Issue Simulation:`**
-
-An HR test user was removed from `GG_HR_Users`. Because the `H:` drive used item-level targeting based on this group, the drive was no longer mapped after the user received a new sign-in token.
-
-**`Diagnosis:`**
-
-The following commands were used:
-
-```cmd
-whoami /groups
-gpresult /r
-net use
-```
-
-The direct UNC path `\\FILESERVER\HR` was also tested to distinguish a group-targeting problem from a general network or file-server outage.
-
-<!-- SCREENSHOT VIII-04A
-Show:
-- GG_HR_Users missing from whoami /groups
-- H: missing from net use
-- direct path result if readable
--->
-
-<p align="center">
-  <!-- <img src="PASTE-VIII-04A-IMAGE-URL-HERE" width="800"/> -->
-</p>
-
-**`Root Cause:`**
-
-The user was not a member of the security group used by Group Policy item-level targeting, so the HR drive-map preference did not apply.
-
-**`Resolution:`**
-
-The user was returned to the HR global group:
-
-```powershell
-Add-ADGroupMember `
-    -Identity "GG_HR_Users" `
-    -Members "acarter"
-```
-
-The user signed out and back in to receive a new security token.
-
-**`Verification:`**
-
-`whoami /groups` confirmed membership in `GG_HR_Users`, and `net use` or File Explorer confirmed that `H:` was mapped to `\\FILESERVER\HR`.
-
-<!-- SCREENSHOT VIII-04B AND CLOSED TICKET -->
-
-<p align="center">
-  <!-- <img src="PASTE-VIII-04B-IMAGE-URL-HERE" width="400"/> -->
-  &nbsp;&nbsp;&nbsp;&nbsp;
-  <!-- <img src="PASTE-VIII-TICKET-04-IMAGE-URL-HERE" width="400"/> -->
-</p>
-
-**`Ticket Documentation:`**
-
-The ticket recorded the missing drive, absent department-group membership, corrected security-group assignment, new sign-in token requirement, and successful mapping verification.
-<br>
-
---------
-
-<h3 align="center"><strong>Ticket 005: User Cannot Access Another Department’s Folder</strong></h3>
-
-**`Issue Simulation:`**
-
-An HR user attempted to open:
-
-```text
-\\FILESERVER\IT
-```
-
-The user received an Access Denied result.
-
-**`Diagnosis:`**
-
-The user’s security-group token and the IT share permissions were reviewed:
-
-```cmd
-whoami /groups
-```
-
-```powershell
-Get-SmbShareAccess -Name IT
-icacls "D:\Shares\IT"
-```
-
-<!-- SCREENSHOT VIII-05A
-Show:
-- Access Denied
-- HR user/group evidence
-- IT share/NTFS permissions proving HR is not authorized
--->
-
-<p align="center">
-  <!-- <img src="PASTE-VIII-05A-IMAGE-URL-HERE" width="800"/> -->
-</p>
-
-**`Root Cause:`**
-
-The HR user did not belong to the authorized IT access groups. The Access Denied message was the expected result of the least-privilege design rather than a system failure.
-
-**`Correct Resolution:`**
-
-The user was not added directly to the IT ACL. The incident was handled by confirming whether a valid business approval existed:
-
-- When no approved business requirement existed, access remained denied.
-- When access is approved in a real environment, the user should be placed into the correct authorized security group rather than receiving a direct folder permission.
-
-**`Verification:`**
-
-The IT share remained restricted to authorized IT users, the HR user’s normal HR access continued to work, and no unauthorized permission change was made.
-
-<!-- SCREENSHOT VIII-05B
-Use the final resolved Spiceworks ticket showing:
-- business access review
-- expected least-privilege denial
-- no unauthorized ACL change
-- verification
-- Resolved/Closed status
--->
-
-<p align="center">
-  <!-- <img src="PASTE-VIII-05B-IMAGE-URL-HERE" width="800"/> -->
-</p>
-
-**`Ticket Documentation:`**
-
-The resolved ticket documented that the reported error was expected security behavior. The ticket showed the permission review, least-privilege root cause, decision not to bypass group-based access control, and confirmation that the file server was working as designed.
-<br>
-
-**`Spiceworks Ticket Workflow:`**
-
-The following ticket statuses were used:
-
-```text
-New
-→ Assigned
-→ In Progress
-→ Pending User
-→ Resolved
-→ Closed
-```
-
-Each ticket included:
-
-- Ticket ID.
-- Requester and affected device.
-- Department and priority.
-- Reported issue and symptoms.
-- Initial assessment.
-- Commands and tools used.
-- Findings and root cause.
-- Resolution.
-- User-perspective verification.
-- Preventive action.
-- Final status.
-
-**`Key Tasks Completed:`**
-- Created five controlled Active Directory and Windows support incidents.
-- Diagnosed a locked account through Active Directory and Event Viewer evidence.
-- Restored user access through account unlock and password-reset procedures.
-- Isolated a DNS failure by comparing IP connectivity with hostname resolution.
-- Corrected client DNS settings and verified domain controller discovery.
-- Diagnosed a missing GPO through OU placement and `gpresult`.
-- Restored a missing drive map through security-group membership.
-- Distinguished an intended least-privilege denial from an actual technical failure.
-- Used `ping`, `ipconfig`, `nslookup`, `nltest`, `gpresult`, `whoami`, `net use`, PowerShell, and Event Viewer.
-- Documented root cause, resolution, and verification in Spiceworks.
-- Moved each completed ticket through a professional support lifecycle.
-- Demonstrated evidence-based troubleshooting instead of changing settings by guesswork.
-
-**`Overview:`**
-
-This phase converted the completed Active Directory environment into a realistic IT support lab. Five controlled incidents were diagnosed through command output, Group Policy results, security logs, account properties, and permissions. Each issue was resolved using the smallest appropriate change and documented through a complete ticket workflow. The results demonstrate practical help desk, Windows administration, Active Directory troubleshooting, access control, and technical documentation experience.
-<br>
-
---------
-
+<a id="project-completion"></a>
 <h2 align="center"><strong>Project Completion Summary</strong></h2>
 
 --------
@@ -1746,9 +1334,7 @@ The completed Enterprise Active Directory and Security Operations Lab now demons
 | Access Control | AGDLP, NTFS permissions, share permissions, least privilege, and access testing |
 | Group Policy | Department policies, security settings, drive maps, and policy troubleshooting |
 | PowerShell | CSV-driven user provisioning, group assignment, account verification, and administration |
-| Security Operations | Account lockout monitoring, audit policy, Event Viewer, privileged-access review, and optional Sysmon |
-| Help Desk | Account recovery, DNS troubleshooting, GPO diagnosis, drive mapping, and access-support cases |
-| Documentation | Repeatable procedures, validation commands, screenshots, and closed Spiceworks tickets |
+| Security Operations | Account lockout monitoring, audit policy, Event Viewer, privileged-access review, and account lifecycle management |
 
 **`Final Project Result:`**
 
