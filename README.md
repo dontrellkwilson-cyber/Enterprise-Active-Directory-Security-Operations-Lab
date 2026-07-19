@@ -58,7 +58,7 @@ PowerShell.<br>
 `Group Policy Management` (**GPOs**).<br>
 `DNS & DHCP Configuration.`<br>
 `Identity & Access Management` (**IAM**).<br>
-`Network Segmentation & Design.`<br>
+`Virtual Network Design & Service Integration.`<br>
 `Windows Server Administration.`<br>
 `PowerShell` (**Basic Automation**).<br>
 
@@ -71,8 +71,49 @@ PowerShell.<br>
 - Windows Server 2022.
 
 
+
+<a id="network-diagram"></a>
+<h2 align="center">Network Diagram</h2>
+
+The lab uses one isolated VirtualBox internal network for domain traffic. DC01 also has a separate NAT adapter that was used only for temporary package and update access. DC01 was not configured as a router for the internal clients.
+
+```mermaid
+flowchart TB
+    INTERNET["Internet / Temporary Update Access"]
+    NAT["VirtualBox NAT Adapter"]
+
+    subgraph HOST["VirtualBox Host"]
+        subgraph LAN["LAB.local Internal Network — 192.168.1.0/24"]
+            DC01["DC01<br/>192.168.1.10<br/>AD DS • DNS • DHCP"]
+            DC02["DC02<br/>192.168.1.11<br/>AD DS • DNS"]
+            FILESERVER["FILESERVER<br/>192.168.1.20<br/>SMB • NTFS • HR and IT Shares"]
+            CLIENT01["CLIENT01<br/>DHCP: 192.168.1.100–200<br/>Windows 10 Domain Client"]
+        end
+    end
+
+    INTERNET -. "Temporary update path" .-> NAT
+    NAT -. "DC01 NAT adapter only" .-> DC01
+
+    DC01 <-->|"AD DS replication and DNS"| DC02
+    CLIENT01 -->|"DHCP, DNS, authentication, and GPO"| DC01
+    CLIENT01 -->|"DNS and authentication redundancy"| DC02
+    CLIENT01 -->|"SMB access to authorized shares"| FILESERVER
+    FILESERVER -->|"Domain authentication and DNS"| DC01
+    FILESERVER -->|"Domain authentication and DNS"| DC02
+```
+
+| System | Addressing | Primary Roles |
+|---|---|---|
+| `DC01` | Static `192.168.1.10/24` | First domain controller, AD DS, DNS, DHCP |
+| `DC02` | Static `192.168.1.11/24` | Additional domain controller, AD DS, DNS, replication |
+| `FILESERVER` | Static `192.168.1.20/24` | Domain member, SMB shares, NTFS permissions |
+| `CLIENT01` | DHCP scope `192.168.1.100–192.168.1.200` | Windows 10 domain client and access-testing workstation |
+
+> **Design note:** No default gateway was assigned to the isolated internal network because the lab did not include a router. The separate NAT adapter on DC01 was retained only for temporary administrative update access.
+
 <h2>Table of Contents</h2>
 
+- [Network Diagram](#network-diagram)
 - [Phase I: Environment Setup](#phase-i)
 - [Phase II: Organizational Unit Design & User Provisioning](#phase-ii)
 - [Phase III: Group Policy Management](#phase-iii)
@@ -82,7 +123,7 @@ PowerShell.<br>
 - [Phase VII: Security Hardening, Auditing & Event Monitoring](#phase-vii)
 - [Project Completion Summary](#project-completion)
 
-<h1 align="left">Lab Walk-Through:</h1>
+<h2 align="left">Lab Walk-Through</h2>
 
 --------
 <a id="phase-i"></a>
@@ -113,13 +154,13 @@ This lab focuses on building a functional Active Directory environment by config
 **`Step 1:`**
 <p align="center"> <strong>Configuring DC01 Network Adapters:</strong> </p>
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/d738e85d-a0ad-4ed5-abc2-2f3bc6f92acb" width="400"/>
+  <img src="https://github.com/user-attachments/assets/d738e85d-a0ad-4ed5-abc2-2f3bc6f92acb" alt="VirtualBox configuration for the DC01 NAT network adapter" width="400"/>
   &nbsp;&nbsp;&nbsp;&nbsp;
-  <img src="https://github.com/user-attachments/assets/3687234f-b5c9-4ed7-b612-33e91835fed9" width="400"/>
+  <img src="https://github.com/user-attachments/assets/3687234f-b5c9-4ed7-b612-33e91835fed9" alt="VirtualBox configuration for the DC01 internal network adapter" width="400"/>
 </p>
 <p align="center"> <strong>Configuring DC02 Network Adapter:</strong> </p>
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/44ff227c-5336-43ca-9872-78ee7923b5f7" width="400"/>
+  <img src="https://github.com/user-attachments/assets/44ff227c-5336-43ca-9872-78ee7923b5f7" alt="VirtualBox configuration for the DC02 internal network adapter" width="400"/>
 </p>
 
 **`Network Services Configuration:`**
@@ -132,9 +173,9 @@ This design was used for lab functionality. In a production environment, routing
 **`Step 2:`**
 <p align="center"> <strong>Configuring DC01 and DC02 with a Static IP Address:</strong> </p>
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/e1220a8f-0d39-4855-b56b-8e144124b025" width="400"/>
+  <img src="https://github.com/user-attachments/assets/e1220a8f-0d39-4855-b56b-8e144124b025" alt="Windows Server static IPv4 configuration for DC01" width="400"/>
   &nbsp;&nbsp;&nbsp;&nbsp;
-  <img src="https://github.com/user-attachments/assets/bbfeecc0-b7d0-4463-95a0-33b8fcc2433d" width="400"/>
+  <img src="https://github.com/user-attachments/assets/bbfeecc0-b7d0-4463-95a0-33b8fcc2433d" alt="Windows Server static IPv4 configuration for DC02" width="400"/>
 </p>
 
 **`Assigning Static IP Configuration:`**
@@ -151,9 +192,9 @@ Using static IPs is critical in a domain environment to prevent IP changes that 
 <p align="center"><strong>Renaming the Server:</strong></p>
 <p align="center"><strong>Renaming Server to DC01 and DC02:</strong></p>
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/dea5fd57-fb1a-4f0c-82c2-ecadd03184c9" width="400"/>
+  <img src="https://github.com/user-attachments/assets/dea5fd57-fb1a-4f0c-82c2-ecadd03184c9" alt="Windows Server renamed to DC01" width="400"/>
   &nbsp;&nbsp;&nbsp;&nbsp;
-  <img src="https://github.com/user-attachments/assets/b8ebba43-6558-4548-85cd-3ad75b06a9c9" width="400"/>
+  <img src="https://github.com/user-attachments/assets/b8ebba43-6558-4548-85cd-3ad75b06a9c9" alt="Windows Server renamed to DC02" width="400"/>
 </p>
 
 **`Server Renaming and Initial Configuration:`**
@@ -164,9 +205,9 @@ Both servers were renamed to DC01 and DC02 to align with standard enterprise nam
 **`Step 4:`**
 <p align="center"><strong>Install Roles (AD DS, DNS, DHCP):</strong></p>
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/bf92de49-7c0a-4723-b834-8d4d49c0648c" width="400"/>
+  <img src="https://github.com/user-attachments/assets/bf92de49-7c0a-4723-b834-8d4d49c0648c" alt="Server Manager role installation for AD DS DNS and DHCP on DC01" width="400"/>
   &nbsp;&nbsp;&nbsp;&nbsp;
-  <img src="https://github.com/user-attachments/assets/286f647e-3d0d-480f-ac7d-5f763bb36686" width="400"/>
+  <img src="https://github.com/user-attachments/assets/286f647e-3d0d-480f-ac7d-5f763bb36686" alt="Server Manager role installation for the additional domain controller" width="400"/>
 </p>
 
 **`Active Directory and Core Services Installation:`**
@@ -178,13 +219,13 @@ Core infrastructure roles were installed to support the Active Directory environ
 <p align="center"><strong>Promote to Domain Controller:</strong></p>
 <p align="center"><strong>DC01 Promotion:</strong></p>
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/92ef89e8-bb07-4939-b4dd-dbc3f1f51b95" width="400"/>
+  <img src="https://github.com/user-attachments/assets/92ef89e8-bb07-4939-b4dd-dbc3f1f51b95" alt="Active Directory Domain Services promotion of DC01 and creation of LAB.local" width="400"/>
 </p>
 <p align="center"><strong>DC02 Promotion:</strong></p>
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/bf549d51-39f4-4935-8e33-2c71b9aa8678" width="400"/>
+  <img src="https://github.com/user-attachments/assets/bf549d51-39f4-4935-8e33-2c71b9aa8678" alt="Active Directory promotion settings for DC02" width="400"/>
   &nbsp;&nbsp;&nbsp;&nbsp;
-  <img src="https://github.com/user-attachments/assets/0ca5fff9-393a-4ef8-ab2f-11cfea43309f" width="400"/>
+  <img src="https://github.com/user-attachments/assets/0ca5fff9-393a-4ef8-ab2f-11cfea43309f" alt="DC02 domain controller promotion confirmation" width="400"/>
 </p>
 
 **`Domain Controller Promotion:`**
@@ -198,15 +239,15 @@ This configuration demonstrates replication and service redundancy within the vi
 <p align="center"><strong>Verify Active Directory + DNS / Replication:</strong></p>
 <p align="center"><strong>DC01 Verification:</strong></p>
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/eaf601d6-5254-410b-8128-d2d4ab9e1a96" width="400"/>
+  <img src="https://github.com/user-attachments/assets/eaf601d6-5254-410b-8128-d2d4ab9e1a96" alt="DC01 Active Directory and DNS verification" width="400"/>
   &nbsp;&nbsp;&nbsp;&nbsp;
-  <img src="https://github.com/user-attachments/assets/87513e3c-8f9c-42b8-80cc-81ef8b80a504" width="400"/>
+  <img src="https://github.com/user-attachments/assets/87513e3c-8f9c-42b8-80cc-81ef8b80a504" alt="DC01 replication health verification" width="400"/>
 </p>
 <p align="center"><strong>DC02 Verification:</strong></p>
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/cc1d45e4-02d0-4f3b-bac2-8f6d03146b22" width="400"/>
+  <img src="https://github.com/user-attachments/assets/cc1d45e4-02d0-4f3b-bac2-8f6d03146b22" alt="DC02 Active Directory and DNS verification" width="400"/>
   &nbsp;&nbsp;&nbsp;&nbsp;
-  <img src="https://github.com/user-attachments/assets/07b2a509-1afc-4b12-93bd-25e6f44482b5" width="400"/>
+  <img src="https://github.com/user-attachments/assets/07b2a509-1afc-4b12-93bd-25e6f44482b5" alt="DC02 replication health verification" width="400"/>
 </p>
 
 **`Active Directory and Replication Verification:`**
@@ -219,24 +260,24 @@ Successful replication confirmed directory consistency and proper communication 
 **`Step 7:`**
 <p align="center"><strong>Configure DHCP:</strong></p>
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/611a31c8-aeba-4bb3-a728-97fb7de0ae17" width="400"/>
+  <img src="https://github.com/user-attachments/assets/611a31c8-aeba-4bb3-a728-97fb7de0ae17" alt="Windows DHCP scope creation on DC01" width="400"/>
   &nbsp;&nbsp;&nbsp;&nbsp;
-  <img src="https://github.com/user-attachments/assets/3232be71-a613-47d7-aee0-ca1524bfdb9a" width="400"/>
+  <img src="https://github.com/user-attachments/assets/3232be71-a613-47d7-aee0-ca1524bfdb9a" alt="DHCP address range configuration for the LAB.local client scope" width="400"/>
 </p>
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/92e065fc-6747-4a1b-a622-af6cae5159f3" width="400"/>
+  <img src="https://github.com/user-attachments/assets/92e065fc-6747-4a1b-a622-af6cae5159f3" alt="DHCP scope settings for client address assignment" width="400"/>
   &nbsp;&nbsp;&nbsp;&nbsp;
-  <img src="https://github.com/user-attachments/assets/41ca138d-f8d7-4fa8-883e-849ab3956820" width="400"/>
+  <img src="https://github.com/user-attachments/assets/41ca138d-f8d7-4fa8-883e-849ab3956820" alt="DHCP scope options and activation settings" width="400"/>
 </p>
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/491b9a01-66ae-4db7-a871-204c1c63f4ea" width="400"/>
+  <img src="https://github.com/user-attachments/assets/491b9a01-66ae-4db7-a871-204c1c63f4ea" alt="Active DHCP scope displayed in the DHCP management console" width="400"/>
 </p>
 
 **`DHCP Configuration:`**
 
 A DHCP scope was configured to automate IP address assignment for client systems within the domain. The scope range (**192.168.1.100–192.168.1.200**) was defined to separate client devices from infrastructure systems.
 
-DNS settings were configured to point to the domain controller, ensuring proper name resolution and domain connectivity. The DHCP server was authorized within Active Directory to allow it to issue IP addresses securely.
+DNS settings were configured to point to the internal domain controllers, ensuring proper name resolution and domain connectivity. The DHCP server was authorized in Active Directory before it issued leases to domain clients.
 
 This setup enables centralized network management and reduces manual configuration for client devices.
 <br>
@@ -244,30 +285,30 @@ This setup enables centralized network management and reduces manual configurati
 **`Step 8:`**
 <p align="center"><strong>Disable DNS Registration on the NAT Adapter:</strong></p>
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/5de4f243-2265-4398-8c06-d2f36969db16" width="400"/>
+  <img src="https://github.com/user-attachments/assets/5de4f243-2265-4398-8c06-d2f36969db16" alt="DNS registration disabled on the DC01 NAT adapter" width="400"/>
 </p>
 <p align="center"><strong>Configure DNS on DC02:</strong></p>
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/b768c82a-7da8-4981-bed1-0d08a34603c0" width="400"/>
+  <img src="https://github.com/user-attachments/assets/b768c82a-7da8-4981-bed1-0d08a34603c0" alt="Internal DNS client configuration on DC02" width="400"/>
 </p>
 
 **`DNS Optimization and Configuration:`**
 
-DNS settings were refined to prevent conflicts and ensure accurate name resolution. DNS registration was disabled on the NAT adapter to avoid incorrect record entries, while DC02 was configured to use DC01 as its primary DNS server.
+DNS settings were refined to prevent conflicts and support accurate internal name resolution. DNS registration was disabled on DC01's NAT adapter so that the external-facing address would not be registered in the `LAB.local` zone. After promotion, the domain controllers used the internal DNS services hosted on DC01 and DC02.
 
-This configuration ensures consistent name resolution and reliable communication between domain controllers.
+For the configuration shown in this lab:
 - Preferred DNS: **192.168.1.10**
 - Alternate DNS: **192.168.1.11**
 
-Now, both domain controllers can resolve each other.
+Name-resolution testing confirmed that both domain controllers could resolve the required internal records.
 <br>
 
 **`Step 9:`**
 <p align="center"><strong>Test DC01:</strong></p>
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/b8b51aab-609c-4a25-80f1-be9e9ed71933" width="400"/>
+  <img src="https://github.com/user-attachments/assets/b8b51aab-609c-4a25-80f1-be9e9ed71933" alt="DC01 IP configuration validation" width="400"/>
   &nbsp;&nbsp;&nbsp;&nbsp;
-  <img src="https://github.com/user-attachments/assets/b58fe52d-ccf2-4cdd-888a-82156a1ab60d" width="400"/>
+  <img src="https://github.com/user-attachments/assets/b58fe52d-ccf2-4cdd-888a-82156a1ab60d" alt="DC01 DNS resolution and domain-services test results" width="400"/>
 </p>
 
 **`System Validation and Testing:`**
@@ -320,14 +361,14 @@ This lab focuses on designing a structured Active Directory environment by creat
 **`Step 1:`**
 <p align="center"><strong>Creating OUs:</strong></p>
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/cc174823-f4fb-4366-b626-f75f32885a6f" width="400"/>
+  <img src="https://github.com/user-attachments/assets/cc174823-f4fb-4366-b626-f75f32885a6f" alt="Active Directory Users and Computers showing the Company OU" width="400"/>
   &nbsp;&nbsp;&nbsp;&nbsp;
-  <img src="https://github.com/user-attachments/assets/a14525a5-2643-4d57-8a6d-20826c09bffc" width="400"/>
+  <img src="https://github.com/user-attachments/assets/a14525a5-2643-4d57-8a6d-20826c09bffc" alt="Active Directory Users and Computers showing departmental OUs" width="400"/>
 </p>
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/d55d9f6e-edb3-43cc-86da-e89ee45fcf5f" width="400"/>
+  <img src="https://github.com/user-attachments/assets/d55d9f6e-edb3-43cc-86da-e89ee45fcf5f" alt="HR IT and Finance OU structure in Active Directory" width="400"/>
   &nbsp;&nbsp;&nbsp;&nbsp;
-  <img src="https://github.com/user-attachments/assets/33de875c-d25a-4c1e-a192-8880011805c9" width="400"/>
+  <img src="https://github.com/user-attachments/assets/33de875c-d25a-4c1e-a192-8880011805c9" alt="Completed LAB.local organizational unit hierarchy" width="400"/>
 </p>
 
 **`Organizational Unit (OU) Design:`**
@@ -340,12 +381,12 @@ This structure supports scalable management, delegation of administrative contro
 **`Step 2:`**
 <p align="center"><strong>Creating Departmental OU Users:</strong></p>
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/b8357139-6768-472f-85ff-ead5b99bdce3" width="400"/>
+  <img src="https://github.com/user-attachments/assets/b8357139-6768-472f-85ff-ead5b99bdce3" alt="HR user accounts created in the HR OU" width="400"/>
   &nbsp;&nbsp;&nbsp;&nbsp;
-  <img src="https://github.com/user-attachments/assets/2408b43e-e250-4a46-ac88-c7c3927fe62a" width="400"/>
+  <img src="https://github.com/user-attachments/assets/2408b43e-e250-4a46-ac88-c7c3927fe62a" alt="IT user accounts created in the IT OU" width="400"/>
 </p>
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/e4ec89e4-a504-4926-88e4-72fd0ffcc979" width="400"/>
+  <img src="https://github.com/user-attachments/assets/e4ec89e4-a504-4926-88e4-72fd0ffcc979" alt="Finance user accounts created in the Finance OU" width="400"/>
 </p>
 
 **`User Provisioning:`**
@@ -358,9 +399,9 @@ Standardized naming conventions were used to maintain consistency and support ea
 **`Step 3:`**
 <p align="center"><strong>Domain Integration of a Windows Client with Active Directory</strong></p>
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/96b854cf-abc4-480b-84c4-116165f85e1c" width="400"/>
+  <img src="https://github.com/user-attachments/assets/96b854cf-abc4-480b-84c4-116165f85e1c" alt="Windows 10 client joined to the LAB.local domain" width="400"/>
   &nbsp;&nbsp;&nbsp;&nbsp;
-  <img src="https://github.com/user-attachments/assets/d0588740-e4bc-43b5-b3fc-3562b4212adb" width="400"/>
+  <img src="https://github.com/user-attachments/assets/d0588740-e4bc-43b5-b3fc-3562b4212adb" alt="Successful Windows client sign-in with LAB.local domain credentials" width="400"/>
 </p>
 
 **`Client Domain Integration:`**
@@ -411,8 +452,8 @@ This phase focuses on implementing centralized management through Group Policy O
 **`Step 1:`**
 <p align="center"> <strong>Open Group Policy Management Console (GPMC):</strong></p>
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/cb087389-5dca-4003-a740-20cef7c5f423" width="400"/>
-  <img src="https://github.com/user-attachments/assets/69d3f2ea-c795-4a44-80c5-37edbe6d6780" width="400"/>
+  <img src="https://github.com/user-attachments/assets/cb087389-5dca-4003-a740-20cef7c5f423" alt="Server Manager Tools menu used to open Group Policy Management" width="400"/>
+  <img src="https://github.com/user-attachments/assets/69d3f2ea-c795-4a44-80c5-37edbe6d6780" alt="Group Policy Management Console for the LAB.local domain" width="400"/>
 </p>
    
 **`Group Policy Management Access:`**
@@ -423,14 +464,14 @@ The Group Policy Management Console (GPMC) was accessed through Server Manager t
 **`Step 2:`**
 <p align="center"> <strong>Create a GPO (per department):</strong></p>
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/5f95cae5-a2e4-43e4-857e-54d9e228418d" width="400"/>
-  <img src="https://github.com/user-attachments/assets/eeea36e7-726a-4022-ac95-472b276d2a33" width="400"/>
-  <img src="https://github.com/user-attachments/assets/d3af92fd-419a-47a0-ac70-57223c6dd1a7" width="400"/>
+  <img src="https://github.com/user-attachments/assets/5f95cae5-a2e4-43e4-857e-54d9e228418d" alt="Finance Group Policy Object creation" width="400"/>
+  <img src="https://github.com/user-attachments/assets/eeea36e7-726a-4022-ac95-472b276d2a33" alt="HR Group Policy Object creation" width="400"/>
+  <img src="https://github.com/user-attachments/assets/d3af92fd-419a-47a0-ac70-57223c6dd1a7" alt="IT Group Policy Object creation" width="400"/>
 </p>
 
 **`Creating and Linking Group Policy Objects:`**
 
-Separate Group Policy Objects (GPOs) were created for each departmental Organizational Unit (HR, IT, Finance) to enable targeted policy enforcement. This approach follows enterprise best practices by avoiding a single monolithic policy and allowing for granular control, scalability, and simplified troubleshooting.
+Separate Group Policy Objects (GPOs) were created for the HR, IT, and Finance OUs to demonstrate targeted policy enforcement. This design avoided placing unrelated settings into one policy and made the lab easier to test and troubleshoot.
 
 Each GPO was linked directly to its respective OU to ensure policies were applied based on organizational structure.
 <br>
@@ -439,18 +480,18 @@ Each GPO was linked directly to its respective OU to ensure policies were applie
 <p align="center"> <strong>Configure Each Policy:</strong></p>
 <p align="center">
   <strong>Finance-GPO:</strong><br>
-  <img src="https://github.com/user-attachments/assets/12e2270a-72a1-4d74-a230-c6dd37ba860b" width="400"/>
-  <img src="https://github.com/user-attachments/assets/151b9fc3-3fa6-4d92-b5f5-5b574ff942ad" width="400"/>
+  <img src="https://github.com/user-attachments/assets/12e2270a-72a1-4d74-a230-c6dd37ba860b" alt="Finance GPO settings in Group Policy Management Editor" width="400"/>
+  <img src="https://github.com/user-attachments/assets/151b9fc3-3fa6-4d92-b5f5-5b574ff942ad" alt="Finance GPO restriction configuration" width="400"/>
 </p>
 <p align="center">
   <strong>HR-GPO:</strong><br>
-  <img src="https://github.com/user-attachments/assets/4fae738f-99ad-49c5-8ef6-3e5094f2a413" width="400"/>
-  <img src="https://github.com/user-attachments/assets/05ab93b4-42ea-44c0-95a3-6f048039d5be" width="400"/>
+  <img src="https://github.com/user-attachments/assets/4fae738f-99ad-49c5-8ef6-3e5094f2a413" alt="HR GPO settings in Group Policy Management Editor" width="400"/>
+  <img src="https://github.com/user-attachments/assets/05ab93b4-42ea-44c0-95a3-6f048039d5be" alt="HR GPO restriction configuration" width="400"/>
 </p>
 <p align="center">
   <strong>IT-GPO:</strong><br>
-  <img src="https://github.com/user-attachments/assets/d9eee175-4a29-4f38-a0f3-167f79235182" width="400"/>
-  <img src="https://github.com/user-attachments/assets/448a981b-ca38-4f2e-90dd-dde63e099a7a" width="400"/>
+  <img src="https://github.com/user-attachments/assets/d9eee175-4a29-4f38-a0f3-167f79235182" alt="IT GPO settings in Group Policy Management Editor" width="400"/>
+  <img src="https://github.com/user-attachments/assets/448a981b-ca38-4f2e-90dd-dde63e099a7a" alt="IT GPO restriction configuration" width="400"/>
 </p>
 
 **`Group Policy Configuration:`**
@@ -463,46 +504,44 @@ These configurations demonstrate centralized control and consistent policy enfor
  **`Step 4:`**
 <p align="center"> <strong>Apply GPO to Specific OU:</strong></p>
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/0149e00e-59b8-4925-ac4c-a984a65c6b1e" width="400"/>
-  <img src="https://github.com/user-attachments/assets/3d6816ea-586f-4c92-9918-fa1f8ced9528" width="400"/>
-  <img src="https://github.com/user-attachments/assets/878761d4-041c-42aa-befe-c37e0ec5e360" width="400"/>
+  <img src="https://github.com/user-attachments/assets/0149e00e-59b8-4925-ac4c-a984a65c6b1e" alt="Finance GPO linked to the Finance OU" width="400"/>
+  <img src="https://github.com/user-attachments/assets/3d6816ea-586f-4c92-9918-fa1f8ced9528" alt="HR GPO linked to the HR OU" width="400"/>
+  <img src="https://github.com/user-attachments/assets/878761d4-041c-42aa-befe-c37e0ec5e360" alt="IT GPO linked to the IT OU" width="400"/>
 </p>
 
-- If you created a GPO from an OU → already linked.
-
-- If not:
-  - Drag GPO to OU or Right-click OU → Link Existing GPO.
+Each departmental GPO was linked to its matching OU. Existing GPOs were linked by right-clicking the OU and selecting **Link an Existing GPO**.
 
  **`Step 5:`**
 <p align="center"> <strong>Verification:</strong></p>
 <p align="center">
   <strong>Finance-GPO:</strong><br>
-  <img src="https://github.com/user-attachments/assets/ab126af8-fd66-4df5-b00c-e673e7e5f3a6" width="400"/>
-  <img src="https://github.com/user-attachments/assets/aa815971-3a55-4e11-82aa-7b4004c91dd1" width="400"/>
-  <img src="https://github.com/user-attachments/assets/064e19d5-c032-4713-a3f7-4e5d0b5d9271" width="400"/>
+  <img src="https://github.com/user-attachments/assets/ab126af8-fd66-4df5-b00c-e673e7e5f3a6" alt="Finance GPO application verification on the Windows client" width="400"/>
+  <img src="https://github.com/user-attachments/assets/aa815971-3a55-4e11-82aa-7b4004c91dd1" alt="Finance user policy-result verification" width="400"/>
+  <img src="https://github.com/user-attachments/assets/064e19d5-c032-4713-a3f7-4e5d0b5d9271" alt="Finance GPO restriction test result" width="400"/>
 </p>
 <p align="center">
   <strong>HR-GPO:</strong><br>
-  <img src="https://github.com/user-attachments/assets/485eb9ed-c183-4354-aa31-eda6e3a5987a" width="400"/>
-  <img src="https://github.com/user-attachments/assets/abb64b7d-933c-4f00-a44b-ac6e66b47484" width="400"/>
-  <img src="https://github.com/user-attachments/assets/f7e1d51d-ed74-4b3d-a853-8b52d1ac6bca" width="400"/>
+  <img src="https://github.com/user-attachments/assets/485eb9ed-c183-4354-aa31-eda6e3a5987a" alt="HR GPO application verification on the Windows client" width="400"/>
+  <img src="https://github.com/user-attachments/assets/abb64b7d-933c-4f00-a44b-ac6e66b47484" alt="HR user policy-result verification" width="400"/>
+  <img src="https://github.com/user-attachments/assets/f7e1d51d-ed74-4b3d-a853-8b52d1ac6bca" alt="HR GPO restriction test result" width="400"/>
 </p>
 <p align="center">
   <strong>IT-GPO:</strong><br>
-  <img src="https://github.com/user-attachments/assets/eabc44b7-f76f-4cbd-90be-f705eafef04c" width="400"/>
-  <img src="https://github.com/user-attachments/assets/acde8262-d890-45a6-862d-e5375c37d878" width="400"/>
-  <img src="https://github.com/user-attachments/assets/14f58004-0af7-477a-a8d9-f914baf8724f" width="400"/>
+  <img src="https://github.com/user-attachments/assets/eabc44b7-f76f-4cbd-90be-f705eafef04c" alt="IT GPO application verification on the Windows client" width="400"/>
+  <img src="https://github.com/user-attachments/assets/acde8262-d890-45a6-862d-e5375c37d878" alt="IT user policy-result verification" width="400"/>
+  <img src="https://github.com/user-attachments/assets/14f58004-0af7-477a-a8d9-f914baf8724f" alt="IT GPO restriction test result" width="400"/>
 </p>
 
-**`On your Windows client:`**
-1. **Force update:**
-   - gpupdate /force
-2. **Verify:**
-   - Try opening Control Panel (HR & IT user blocked).
-   - Check lock screen timeout.
-3. **Run:**
-   - gpresult /r
-- This shows Applied GPOs and which OU did it come from.
+**`Client-Side Verification:`**
+
+The policies were refreshed and reviewed from the Windows client:
+
+```cmd
+gpupdate /force
+gpresult /r
+```
+
+The applied-GPO list, Control Panel restriction, and screen-lock behavior were then checked under the appropriate departmental user accounts.
 
 **`Key Tasks Completed:`**
 - Implemented centralized configuration management using Group Policy Objects (GPOs) across departmental OUs.
@@ -672,7 +711,7 @@ Two network shares were created through **Server Manager → File and Storage Se
 \\FILESERVER\IT
 ```
 
-The default `Everyone` share permission was removed. Administrators retained Full Control, while the matching domain-local access group received Change and Read permissions. Access-based enumeration was also enabled to reduce visibility of unauthorized shared resources.
+The default `Everyone` share permission was removed. Administrators retained Full Control, while the matching domain-local access group received Change and Read permissions. Access-based enumeration was also enabled as an additional visibility control. Authorization continued to be enforced by the SMB share and NTFS permissions.
 
 This configuration requires users to be authorized by both the SMB share permissions and the NTFS permissions.
 <br>
@@ -1260,7 +1299,7 @@ Get-ADGroupMember "Enterprise Admins"
 Get-ADGroupMember "Schema Admins"
 ```
 
-The review confirmed that HR, Finance, and standard IT accounts were not members of these groups. Administrative access remained limited to approved accounts.
+The review confirmed that the tested HR, Finance, and standard IT accounts were not members of these groups. The displayed membership was limited to the intended administrative accounts.
 <br>
 
 **`Step 7:`**
